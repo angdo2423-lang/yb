@@ -273,7 +273,7 @@
     <div class="person-panel groom">
       <div class="person-header">
         <div class="person-name-group"><span>💙 도훈</span></div>
-        <span class="person-total" id="groom_fixed_total" style="color:var(--groom)">0원</span>
+        <span class="person-total" id="groom_fixed_total_header" style="color:var(--groom)">0원</span>
       </div>
       <div class="person-body">
         <div class="sub-header">
@@ -327,7 +327,7 @@
     <div class="person-panel groom">
       <div class="person-header">
         <div class="person-name-group"><span>💙 도훈</span></div>
-        <span class="person-total" id="groom_allow_total" style="color:var(--groom)">0원</span>
+        <span class="person-total" id="groom_allow_total_header" style="color:var(--groom)">0원</span>
       </div>
       <div class="person-body">
         <div class="sub-header">
@@ -423,7 +423,7 @@
     <div class="person-panel groom">
       <div class="person-header">
         <div class="person-name-group"><span>💙 도훈</span></div>
-        <span class="person-total" id="groom_invest_total" style="color:var(--groom)">0원</span>
+        <span class="person-total" id="groom_invest_total_header" style="color:var(--groom)">0원</span>
       </div>
       <div class="person-body">
         <div class="sub-header">
@@ -763,11 +763,14 @@ async function render() {
   const bi = renderTable(data, 'bride_invest_body', 'bride_invest', 'invest');
   const ev = renderEventTable(data);
 
-  document.getElementById('groom_fixed_total').textContent  = fmt(gf);
+  document.getElementById('groom_fixed_total').textContent = fmt(gf);
+  document.getElementById('groom_fixed_total_header').textContent = fmt(gf);
   document.getElementById('bride_fixed_total').textContent  = fmt(bf);
-  document.getElementById('groom_allow_total').textContent  = fmt(ga);
+  document.getElementById('groom_allow_total').textContent = fmt(ga);
+  document.getElementById('groom_allow_total_header').textContent = fmt(ga);
   document.getElementById('bride_allow_total').textContent  = fmt(ba);
   document.getElementById('groom_invest_total').textContent = fmt(gi);
+  document.getElementById('groom_invest_total_header').textContent = fmt(gi);
   document.getElementById('bride_invest_total').textContent = fmt(bi);
 
   document.getElementById('grand_total_fixed').textContent  = fmt(gf+bf);
