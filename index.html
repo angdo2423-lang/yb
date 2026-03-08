@@ -85,7 +85,7 @@
   }
   .income-edit label { font-size:13px; color:var(--mid-gray); min-width:55px; font-weight:500; }
   .income-edit .inc-name { font-size:15px; font-weight:600; flex:1; }
-  .income-edit input[type=number] {
+  .income-edit input[type=text] {
     border:none; background:transparent; font-size:19px; font-weight:800;
     font-family:'Pretendard',sans-serif; color:var(--sage-dark); outline:none; text-align:right; width:140px;
     letter-spacing: -.02em;
@@ -149,6 +149,21 @@
   .btn-add:hover { border-color:var(--sage); color:var(--sage-dark); background:#EBF3EC; }
   .btn-del { background:none; border:none; color:#ccc; cursor:pointer; font-size:14px; padding:3px 6px; border-radius:5px; transition:color .2s; }
   .btn-del:hover { color:var(--terracotta); }
+  .btn-edit { background:none; border:none; color:#bbb; cursor:pointer; font-size:13px; padding:3px 5px; border-radius:5px; transition:color .2s; }
+  .btn-edit:hover { color:var(--groom); }
+
+  /* 고정비 합계 총액 */
+  .fixed-grand-total {
+    background: var(--charcoal); border-radius: 16px; padding: 22px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 30px;
+  }
+  .fixed-grand-total .lbl { font-size:15px; color:#aaa; font-weight:600; }
+  .fixed-grand-total .val { font-size:26px; font-weight:800; color:#fff; letter-spacing:-.02em; }
+  .fixed-grand-breakdown { display:flex; gap:20px; align-items:center; }
+  .fgb-item { text-align:center; }
+  .fgb-item .name { font-size:12px; color:#888; margin-bottom:4px; }
+  .fgb-item .num  { font-size:16px; font-weight:700; }
 
   /* Bottom */
   .bottom-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px; }
@@ -221,7 +236,7 @@
   </div>
 
   <!-- Summary Cards -->
-  <div class="summary-grid">
+  <div class="summary-grid" style="grid-template-columns:repeat(3,1fr)">
     <div class="summary-card card-income">
       <div class="card-label">💰 총 수입</div>
       <div class="card-amount pos" id="c_income">0원</div>
@@ -230,22 +245,12 @@
     <div class="summary-card card-fixed">
       <div class="card-label">🏠 총 고정비</div>
       <div class="card-amount neg" id="c_fixed">0원</div>
-      <div class="card-sub" id="c_fixed_pct">수입의 0%</div>
-    </div>
-    <div class="summary-card card-invest">
-      <div class="card-label">📈 총 투자·저축</div>
-      <div class="card-amount" style="color:var(--gold)" id="c_invest">0원</div>
-      <div class="card-sub" id="c_invest_pct">수입의 0%</div>
+      <div class="card-sub">도훈 + 아린</div>
     </div>
     <div class="summary-card card-allow">
       <div class="card-label">👛 총 용돈</div>
       <div class="card-amount" style="color:var(--sage-dark)" id="c_allow">0원</div>
-      <div class="card-sub" id="c_allow_pct">수입의 0%</div>
-    </div>
-    <div class="summary-card card-remain">
-      <div class="card-label">🎉 자유 사용</div>
-      <div class="card-amount" id="c_free">0원</div>
-      <div class="card-sub">남은 금액</div>
+      <div class="card-sub">도훈 + 아린</div>
     </div>
   </div>
 
@@ -276,15 +281,18 @@
           <button class="btn-add" onclick="openModal('fixed','groom')">+ 추가</button>
         </div>
         <table class="budget-table">
-          <thead><tr><th>항목</th><th>분류</th><th class="amt">금액</th><th></th></tr></thead>
+          <thead><tr><th>납부일</th><th>항목</th><th>분류</th><th class="amt">금액</th><th></th></tr></thead>
           <tbody id="groom_fixed_body"></tbody>
         </table>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--light-gray);display:flex;justify-content:flex-end;align-items:center;gap:10px">
+          <span style="font-size:13px;color:var(--mid-gray);font-weight:600">소계</span>
+          <span style="font-size:17px;font-weight:800;color:var(--groom)" id="groom_fixed_total">0원</span>
+        </div>
       </div>
     </div>
     <div class="person-panel bride">
       <div class="person-header">
         <div class="person-name-group"><span>🩷 아린</span></div>
-        <span class="person-total" id="bride_fixed_total" style="color:var(--bride)">0원</span>
       </div>
       <div class="person-body">
         <div class="sub-header">
@@ -292,52 +300,21 @@
           <button class="btn-add" onclick="openModal('fixed','bride')">+ 추가</button>
         </div>
         <table class="budget-table">
-          <thead><tr><th>항목</th><th>분류</th><th class="amt">금액</th><th></th></tr></thead>
+          <thead><tr><th>납부일</th><th>항목</th><th>분류</th><th class="amt">금액</th><th></th></tr></thead>
           <tbody id="bride_fixed_body"></tbody>
         </table>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--light-gray);display:flex;justify-content:flex-end;align-items:center;gap:10px">
+          <span style="font-size:13px;color:var(--mid-gray);font-weight:600">소계</span>
+          <span style="font-size:17px;font-weight:800;color:var(--bride)" id="bride_fixed_total">0원</span>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- 투자/저축 -->
-  <div class="section-divider">
-    <div class="section-divider-line"></div>
-    <div class="section-divider-label">📈 투자 / 저축</div>
-    <div class="section-divider-line"></div>
-  </div>
-  <div class="couple-grid">
-    <div class="person-panel groom">
-      <div class="person-header">
-        <div class="person-name-group"><span>💙 도훈</span></div>
-        <span class="person-total" id="groom_invest_total" style="color:var(--groom)">0원</span>
-      </div>
-      <div class="person-body">
-        <div class="sub-header">
-          <div class="sub-title"><span class="dot dot-gold"></span> 투자·저축 항목</div>
-          <button class="btn-add" onclick="openModal('invest','groom')">+ 추가</button>
-        </div>
-        <table class="budget-table">
-          <thead><tr><th>항목</th><th>유형</th><th class="amt">금액</th><th></th></tr></thead>
-          <tbody id="groom_invest_body"></tbody>
-        </table>
-      </div>
-    </div>
-    <div class="person-panel bride">
-      <div class="person-header">
-        <div class="person-name-group"><span>🩷 아린</span></div>
-        <span class="person-total" id="bride_invest_total" style="color:var(--bride)">0원</span>
-      </div>
-      <div class="person-body">
-        <div class="sub-header">
-          <div class="sub-title"><span class="dot dot-gold"></span> 투자·저축 항목</div>
-          <button class="btn-add" onclick="openModal('invest','bride')">+ 추가</button>
-        </div>
-        <table class="budget-table">
-          <thead><tr><th>항목</th><th>유형</th><th class="amt">금액</th><th></th></tr></thead>
-          <tbody id="bride_invest_body"></tbody>
-        </table>
-      </div>
-    </div>
+  <!-- 고정비 합계줄 (패널 아래, 같은 섹션 느낌) -->
+  <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;margin:-18px 0 30px;padding:14px 22px;background:var(--warm-white);border-radius:0 0 16px 16px;border:1px solid var(--light-gray);border-top:none">
+    <span style="font-size:14px;color:var(--mid-gray);font-weight:600">🏠 고정비 합계</span>
+    <span style="font-size:22px;font-weight:800;color:var(--terracotta);letter-spacing:-.02em" id="grand_total_fixed">0원</span>
   </div>
 
   <!-- 용돈 -->
@@ -361,12 +338,15 @@
           <thead><tr><th>항목</th><th class="amt">금액</th><th></th></tr></thead>
           <tbody id="groom_allow_body"></tbody>
         </table>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--light-gray);display:flex;justify-content:flex-end;align-items:center;gap:10px">
+          <span style="font-size:13px;color:var(--mid-gray);font-weight:600">소계</span>
+          <span style="font-size:17px;font-weight:800;color:var(--groom)" id="groom_allow_total">0원</span>
+        </div>
       </div>
     </div>
     <div class="person-panel bride">
       <div class="person-header">
         <div class="person-name-group"><span>🩷 아린</span></div>
-        <span class="person-total" id="bride_allow_total" style="color:var(--bride)">0원</span>
       </div>
       <div class="person-body">
         <div class="sub-header">
@@ -377,52 +357,113 @@
           <thead><tr><th>항목</th><th class="amt">금액</th><th></th></tr></thead>
           <tbody id="bride_allow_body"></tbody>
         </table>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--light-gray);display:flex;justify-content:flex-end;align-items:center;gap:10px">
+          <span style="font-size:13px;color:var(--mid-gray);font-weight:600">소계</span>
+          <span style="font-size:17px;font-weight:800;color:var(--bride)" id="bride_allow_total">0원</span>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Bottom -->
-  <div class="bottom-grid">
-    <div class="progress-box">
-      <div class="section-title" style="margin-bottom:18px">
-        <span class="dot" style="background:var(--charcoal);width:10px;height:10px"></span> 예산 비율
+  <!-- 용돈 합계줄 -->
+  <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;margin:-18px 0 30px;padding:14px 22px;background:var(--warm-white);border-radius:0 0 16px 16px;border:1px solid var(--light-gray);border-top:none">
+    <span style="font-size:14px;color:var(--mid-gray);font-weight:600">👛 용돈 합계</span>
+    <span style="font-size:22px;font-weight:800;color:var(--sage-dark);letter-spacing:-.02em" id="grand_total_allow">0원</span>
+  </div>
+
+  <!-- 경조사비 -->
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-label">🎁 경조사비</div>
+    <div class="section-divider-line"></div>
+  </div>
+  <div class="section-box" style="margin-bottom:30px">
+    <div class="section-header">
+      <div class="section-title" style="font-size:16px"><span class="dot" style="background:var(--gold);width:10px;height:10px;display:inline-block;border-radius:50%"></span> 경조사비 항목</div>
+      <button class="btn-add" onclick="openModal('event','')">+ 추가</button>
+    </div>
+    <table class="budget-table">
+      <thead><tr><th>항목</th><th class="amt">금액</th><th></th></tr></thead>
+      <tbody id="event_body"></tbody>
+    </table>
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--light-gray);display:flex;justify-content:flex-end;align-items:center;gap:12px">
+      <span style="font-size:14px;color:var(--mid-gray);font-weight:600">경조사비 합계</span>
+      <span style="font-size:22px;font-weight:800;color:var(--gold);letter-spacing:-.02em" id="event_total">0원</span>
+    </div>
+  </div>
+
+  <!-- 생활비 -->
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-label">🛒 생활비</div>
+    <div class="section-divider-line"></div>
+  </div>
+  <div class="section-box" style="margin-bottom:12px">
+    <div class="section-header">
+      <div class="section-title" style="font-size:16px"><span class="dot dot-terra" style="width:10px;height:10px"></span> 생활비 항목</div>
+      <button class="btn-add" onclick="openModal('living','')">+ 추가</button>
+    </div>
+    <table class="budget-table">
+      <thead><tr><th>항목</th><th>분류</th><th class="amt">금액</th><th></th></tr></thead>
+      <tbody id="living_body"></tbody>
+    </table>
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--light-gray);display:flex;justify-content:flex-end;align-items:center;gap:12px">
+      <span style="font-size:14px;color:var(--mid-gray);font-weight:600">🛒 생활비 합계</span>
+      <span style="font-size:22px;font-weight:800;color:var(--terracotta);letter-spacing:-.02em" id="living_total">0원</span>
+    </div>
+  </div>
+
+  <!-- 투자 -->
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-label">📈 투자</div>
+    <div class="section-divider-line"></div>
+  </div>
+  <div class="couple-grid">
+    <div class="person-panel groom">
+      <div class="person-header">
+        <div class="person-name-group"><span>💙 도훈</span></div>
+        <span class="person-total" id="groom_invest_total" style="color:var(--groom)">0원</span>
       </div>
-      <div class="progress-row">
-        <span class="progress-label" style="color:var(--terracotta)">고정비</span>
-        <div class="progress-bar-bg"><div class="progress-bar-fill fill-terra" id="pFixedBar" style="width:0%"></div></div>
-        <span class="progress-pct" id="pFixedPct">0%</span>
-      </div>
-      <div class="progress-row">
-        <span class="progress-label" style="color:var(--gold)">투자·저축</span>
-        <div class="progress-bar-bg"><div class="progress-bar-fill fill-gold" id="pInvestBar" style="width:0%"></div></div>
-        <span class="progress-pct" id="pInvestPct">0%</span>
-      </div>
-      <div class="progress-row">
-        <span class="progress-label" style="color:var(--sage-dark)">용돈</span>
-        <div class="progress-bar-bg"><div class="progress-bar-fill fill-sage" id="pAllowBar" style="width:0%"></div></div>
-        <span class="progress-pct" id="pAllowPct">0%</span>
+      <div class="person-body">
+        <div class="sub-header">
+          <div class="sub-title"><span class="dot dot-gold"></span> 투자 항목</div>
+          <button class="btn-add" onclick="openModal('invest','groom')">+ 추가</button>
+        </div>
+        <table class="budget-table">
+          <thead><tr><th>항목</th><th>유형</th><th class="amt">금액</th><th></th></tr></thead>
+          <tbody id="groom_invest_body"></tbody>
+        </table>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--light-gray);display:flex;justify-content:flex-end;align-items:center;gap:10px">
+          <span style="font-size:13px;color:var(--mid-gray);font-weight:600">소계</span>
+          <span style="font-size:17px;font-weight:800;color:var(--groom)" id="groom_invest_total">0원</span>
+        </div>
       </div>
     </div>
-    <div class="progress-box">
-      <div class="section-title" style="margin-bottom:18px">
-        <span class="dot" style="background:var(--sage);width:10px;height:10px"></span> 이번 달 요약
+    <div class="person-panel bride">
+      <div class="person-header">
+        <div class="person-name-group"><span>🩷 아린</span></div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div style="background:var(--groom-bg);border-radius:12px;padding:14px 16px">
-          <div style="font-size:13px;color:var(--groom);font-weight:700;margin-bottom:6px">💙 도훈 지출 합계</div>
-          <div style="font-size:18px;font-weight:800;color:var(--groom);letter-spacing:-.02em" id="sum_groom">0원</div>
+      <div class="person-body">
+        <div class="sub-header">
+          <div class="sub-title"><span class="dot dot-gold"></span> 투자 항목</div>
+          <button class="btn-add" onclick="openModal('invest','bride')">+ 추가</button>
         </div>
-        <div style="background:var(--bride-bg);border-radius:12px;padding:14px 16px">
-          <div style="font-size:13px;color:var(--bride);font-weight:700;margin-bottom:6px">🩷 아린 지출 합계</div>
-          <div style="font-size:18px;font-weight:800;color:var(--bride);letter-spacing:-.02em" id="sum_bride">0원</div>
+        <table class="budget-table">
+          <thead><tr><th>항목</th><th>유형</th><th class="amt">금액</th><th></th></tr></thead>
+          <tbody id="bride_invest_body"></tbody>
+        </table>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--light-gray);display:flex;justify-content:flex-end;align-items:center;gap:10px">
+          <span style="font-size:13px;color:var(--mid-gray);font-weight:600">소계</span>
+          <span style="font-size:17px;font-weight:800;color:var(--bride)" id="bride_invest_total">0원</span>
         </div>
-      </div>
-      <div class="free-block">
-        <div class="lbl">자유 사용 가능 금액</div>
-        <div class="amt-big" id="freeAmount">0원</div>
-        <div class="sub">수입 − 고정비 − 투자 − 용돈</div>
       </div>
     </div>
+  </div>
+  <!-- 투자 합계줄 -->
+  <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;margin:-18px 0 30px;padding:14px 22px;background:var(--warm-white);border-radius:0 0 16px 16px;border:1px solid var(--light-gray);border-top:none">
+    <span style="font-size:14px;color:var(--mid-gray);font-weight:600">📈 투자 합계</span>
+    <span style="font-size:22px;font-weight:800;color:var(--gold);letter-spacing:-.02em" id="grand_total_invest">0원</span>
   </div>
 
 </main>
@@ -431,6 +472,10 @@
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
   <div class="modal">
     <h3 id="modalTitle">항목 추가</h3>
+    <div class="form-group" id="fDateGroup" style="display:none">
+      <label>납부일</label>
+      <input type="text" id="fDate" placeholder="예) 매월 5일">
+    </div>
     <div class="form-group" id="fCategoryGroup">
       <label>분류</label>
       <select id="fCategory"></select>
@@ -454,15 +499,62 @@
 // ── Google Sheets API ──
 const API_URL = 'https://script.google.com/macros/s/AKfycbxhZKggsKZ9UFs09Iyx8NfdwpXsGHQZ9X6jUbJeOsopTzEDVW5X7yLzkOMK1zBEo4UXsQ/exec';
 
+// ── 기본값 (매월 자동으로 채워질 항목들) ──
+const DEFAULTS = {
+  groom_fixed: [
+    { id: 'd1',  date:'매월 5일',  name:'도약계좌',      cat:'저축',  amount:700000 },
+    { id: 'd2',  date:'매월 5일',  name:'청약',          cat:'저축',  amount:20000  },
+    { id: 'd3',  date:'매월 5일',  name:'보험',          cat:'보험',  amount:80000  },
+    { id: 'd4',  date:'매월 10일', name:'대출이자',       cat:'주거',  amount:130000 },
+    { id: 'd5',  date:'매월 15일', name:'내일채움공제',   cat:'저축',  amount:120000 },
+    { id: 'd6',  date:'매월 20일', name:'모임통장',       cat:'기타',  amount:10000  },
+    { id: 'd7',  date:'매월 20일', name:'도시가스',       cat:'주거',  amount:40000  },
+    { id: 'd8',  date:'매월 21일', name:'핸드폰',        cat:'통신',  amount:30000  },
+    { id: 'd9',  date:'매월 21일', name:'교통비',        cat:'교통',  amount:60000  },
+    { id: 'd10', date:'매월 24일', name:'관리비',        cat:'주거',  amount:160000 },
+    { id: 'd11', date:'매월 25일', name:'월세',          cat:'주거',  amount:330000 },
+  ],
+  bride_fixed: [
+    { id: 'b1',  date:'매월 1일',  name:'도약계좌',      cat:'저축',  amount:700000 },
+    { id: 'b2',  date:'매월 5일',  name:'청약',          cat:'저축',  amount:20000  },
+    { id: 'b3',  date:'매월 10일', name:'핸드폰',        cat:'통신',  amount:20000  },
+    { id: 'b4',  date:'매월 10일', name:'농협보험',      cat:'보험',  amount:70000  },
+    { id: 'b5',  date:'매월 15일', name:'DB보험',        cat:'보험',  amount:50000  },
+    { id: 'b6',  date:'매월 20일', name:'여행적금',      cat:'저축',  amount:50000  },
+    { id: 'b7',  date:'매월 11일', name:'화재보험',      cat:'보험',  amount:13000  },
+    { id: 'b8',  date:'매달',      name:'교통비',        cat:'교통',  amount:60000  },
+  ],
+  groom_allow: [
+    { id: 'ga1', date:'', name:'용돈', cat:'용돈', amount:200000 },
+  ],
+  bride_allow: [
+    { id: 'ba1', date:'', name:'용돈', cat:'용돈', amount:200000 },
+  ],
+  event: [
+    { id: 'ev1', name:'경조사비', amount:300000 },
+  ],
+};
+
 let currentMonth = new Date().getMonth();
 let currentYear  = new Date().getFullYear();
 let modalType = '', modalPerson = '';
-let cache = {}; // 로컬 캐시 (빠른 렌더링용)
+let editingItem = null; // 수정 중인 항목
+let cache = {};
 
 function monthKey() { return `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`; }
 
 function emptyData() {
-  return { income:[], groom_fixed:[], bride_fixed:[], groom_invest:[], bride_invest:[], groom_allow:[], bride_allow:[] };
+  return {
+    income: [],
+    groom_fixed:  JSON.parse(JSON.stringify(DEFAULTS.groom_fixed)),
+    bride_fixed:  JSON.parse(JSON.stringify(DEFAULTS.bride_fixed)),
+    groom_allow:  JSON.parse(JSON.stringify(DEFAULTS.groom_allow)),
+    bride_allow:  JSON.parse(JSON.stringify(DEFAULTS.bride_allow)),
+    living:       [],
+    groom_invest: [],
+    bride_invest: [],
+    event:        JSON.parse(JSON.stringify(DEFAULTS.event)),
+  };
 }
 
 // 로딩 표시
@@ -504,30 +596,39 @@ async function saveData(data) {
 
 const catOptions = {
   income:    ['월급','부수입','기타'],
-  fixed:     ['주거','교통','통신','보험','구독','식비','의료','기타'],
-  invest:    ['주식','펀드','ETF','청약','예·적금','암호화폐','기타'],
-  allowance: ['용돈','교통비','식비','기타']
-};
-const modalTitles = {
-  income:'수입 추가',
-  fixed_groom:'💙 도훈 고정비 추가', fixed_bride:'🩷 아린 고정비 추가',
-  invest_groom:'💙 도훈 투자·저축 추가', invest_bride:'🩷 아린 투자·저축 추가',
-  allowance_groom:'💙 도훈 용돈 추가', allowance_bride:'🩷 아린 용돈 추가',
+  fixed:     ['주거','교통','통신','보험','저축','기타'],
+  allowance: ['용돈','교통비','식비','기타'],
+  living:    ['식비','카페','마트','외식','생필품','의료','기타'],
+  invest:    ['주식','ETF','펀드','암호화폐','기타'],
+  event:     ['결혼','장례','돌잔치','생일','기타'],
 };
 
-function openModal(type, person) {
-  modalType = type; modalPerson = person;
+function openModal(type, person, itemToEdit=null) {
+  modalType = type; modalPerson = person; editingItem = itemToEdit;
   const key = person ? `${type}_${person}` : type;
-  document.getElementById('modalTitle').textContent = modalTitles[key] || '항목 추가';
-  document.getElementById('fName').value = '';
-  document.getElementById('fAmount').value = '';
+  const titles = {
+    income:'수입 추가',
+    fixed_groom:'💙 도훈 고정비',   fixed_bride:'🩷 아린 고정비',
+    allowance_groom:'💙 도훈 용돈', allowance_bride:'🩷 아린 용돈',
+    living_:'🛒 생활비',
+    invest_groom:'💙 도훈 투자',    invest_bride:'🩷 아린 투자',
+    event_:'🎁 경조사비',
+  };
+  document.getElementById('modalTitle').textContent = (itemToEdit ? '✏️ 수정 — ' : '+ ') + (titles[key]||'항목 추가');
+  document.getElementById('fName').value   = itemToEdit ? itemToEdit.name   : '';
+  document.getElementById('fAmount').value = itemToEdit ? itemToEdit.amount : '';
+  document.getElementById('fDate').value   = itemToEdit ? (itemToEdit.date||'') : '';
+
   const sel = document.getElementById('fCategory');
   sel.innerHTML = '';
   catOptions[type].forEach(o => {
-    const opt = document.createElement('option'); opt.value = o; opt.textContent = o;
+    const opt = document.createElement('option');
+    opt.value = o; opt.textContent = o;
+    if (itemToEdit && itemToEdit.cat === o) opt.selected = true;
     sel.appendChild(opt);
   });
-  document.getElementById('fCategoryGroup').style.display = type === 'allowance' ? 'none' : '';
+  document.getElementById('fCategoryGroup').style.display = (type === 'allowance') ? 'none' : '';
+  document.getElementById('fDateGroup').style.display = (type === 'fixed') ? '' : 'none';
   document.getElementById('modalOverlay').classList.add('active');
   setTimeout(() => document.getElementById('fName').focus(), 100);
 }
@@ -535,14 +636,23 @@ function closeModal(e) { if (e.target===document.getElementById('modalOverlay'))
 function closeModalDirect() { document.getElementById('modalOverlay').classList.remove('active'); }
 
 async function saveItem() {
-  const name = document.getElementById('fName').value.trim();
+  const name   = document.getElementById('fName').value.trim();
   const amount = parseInt(document.getElementById('fAmount').value);
-  const cat = document.getElementById('fCategory').value;
+  const cat    = document.getElementById('fCategory').value;
+  const date   = document.getElementById('fDate').value.trim();
   if (!name || !amount) { alert('항목명과 금액을 입력해주세요.'); return; }
   const data = await loadData();
-  const key = modalPerson ? `${modalPerson}_${modalType}` : modalType;
+  const key  = modalPerson ? `${modalPerson}_${modalType}` : modalType;
   if (!data[key]) data[key] = [];
-  data[key].push({ id: Date.now(), name, cat, amount });
+
+  if (editingItem) {
+    // 수정 모드
+    const idx = data[key].findIndex(i => i.id === editingItem.id);
+    if (idx !== -1) data[key][idx] = { ...data[key][idx], name, cat, amount, date };
+  } else {
+    // 추가 모드
+    data[key].push({ id: Date.now(), date, name, cat, amount });
+  }
   closeModalDirect();
   await saveData(data);
   render();
@@ -555,30 +665,86 @@ async function deleteItem(key, id) {
   render();
 }
 
-async function updateAmount(key, id, val) {
+async function updateItemAmount(key, id, val) {
   const data = await loadData();
-  const item = (data[key]||[]).find(i => i.id === id);
+  const item = (data[key]||[]).find(i => i.id == id);
   if (item) { item.amount = parseInt(val)||0; await saveData(data); render(); }
 }
 
-function fmt(n) { return n.toLocaleString('ko-KR') + '원'; }
+function fmt(n) { return Number(n).toLocaleString('ko-KR') + '원'; }
 
 function renderTable(data, bodyId, key, type) {
   const body = document.getElementById(bodyId);
   body.innerHTML = '';
   const items = data[key] || [];
+  const isFixed = type === 'fixed';
+  const isAllow = type === 'allowance';
   if (!items.length) {
-    const cols = type === 'allowance' ? 3 : 4;
-    body.innerHTML = `<tr><td colspan="${cols}" style="text-align:center;padding:14px;color:#ccc;font-size:12px">항목을 추가해보세요</td></tr>`;
+    const cols = isAllow ? 4 : isFixed ? 6 : 5;
+    body.innerHTML = `<tr><td colspan="${cols}" style="text-align:center;padding:16px;color:#ccc;font-size:13px">항목을 추가해보세요</td></tr>`;
+    return 0;
+  }
+
+  // 납부일 기준 정렬 (고정비만)
+  const sorted = isFixed ? [...items].sort((a,b) => {
+    const n = s => parseInt((s||'').replace(/[^0-9]/g,'')) || 99;
+    return n(a.date) - n(b.date);
+  }) : items;
+
+  sorted.forEach(item => {
+    const tr = document.createElement('tr');
+    const tagClass = type==='invest' ? 'tag-invest' : 'tag-fixed';
+    const amtClass = type==='invest' ? 'inv' : type==='allowance' ? 'allow' : 'out';
+    const person   = key === 'living' || key === 'event' ? '' : key.startsWith('groom') ? 'groom' : 'bride';
+
+    const dateCell = isFixed ? `<td style="font-size:12px;color:var(--mid-gray);white-space:nowrap">${item.date||''}</td>` : '';
+    const catCell  = isAllow ? '' : `<td><span class="tag ${tagClass}">${item.cat||''}</span></td>`;
+
+    tr.innerHTML = `
+      ${dateCell}
+      <td>${item.name}</td>
+      ${catCell}
+      <td class="amt ${amtClass}">
+        <input type="text" value="${Number(item.amount).toLocaleString('ko-KR')}"
+          style="border:none;background:transparent;font-size:14px;font-weight:700;color:inherit;text-align:right;width:100px;font-family:'Pretendard',sans-serif;outline:none;"
+          onchange="updateItemAmount('${key}','${item.id}',this.value.replace(/,/g,''))"
+          onfocus="this.style.background='var(--cream)';this.style.borderRadius='6px';this.style.padding='2px 6px';this.value=this.value.replace(/,/g,'')"
+          onblur="this.style.background='transparent';this.style.padding='0';this.value=Number(this.value.replace(/,/g,'')||0).toLocaleString('ko-KR')">
+        <span style="font-size:13px;font-weight:600">원</span>
+      </td>
+      <td style="white-space:nowrap">
+        <button class="btn-edit" onclick="openModal('${type}','${person}',${JSON.stringify(item).replace(/"/g,'&quot;')})">✏️</button>
+        <button class="btn-del"  onclick="deleteItem('${key}',${item.id})">✕</button>
+      </td>`;
+    body.appendChild(tr);
+  });
+  return items.reduce((s,i)=>s+i.amount, 0);
+}
+
+function renderEventTable(data) {
+  const body = document.getElementById('event_body');
+  body.innerHTML = '';
+  const items = data.event || [];
+  if (!items.length) {
+    body.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:16px;color:#ccc;font-size:13px">경조사비를 추가해보세요</td></tr>`;
     return 0;
   }
   items.forEach(item => {
     const tr = document.createElement('tr');
-    const tagClass = type==='invest' ? 'tag-invest' : 'tag-fixed';
-    const amtClass = type==='invest' ? 'inv' : type==='allowance' ? 'allow' : 'out';
-    const catCell  = type==='allowance' ? '' : `<td><span class="tag ${tagClass}">${item.cat||''}</span></td>`;
-    tr.innerHTML = `<td>${item.name}</td>${catCell}<td class="amt ${amtClass}">${fmt(item.amount)}</td>
-      <td><button class="btn-del" onclick="deleteItem('${key}',${item.id})">✕</button></td>`;
+    tr.innerHTML = `
+      <td>${item.name}${item.cat ? ` <span class="tag" style="background:#FDF7E5;color:var(--gold)">${item.cat}</span>` : ''}</td>
+      <td class="amt" style="color:var(--gold)">
+        <input type="text" value="${Number(item.amount).toLocaleString('ko-KR')}"
+          style="border:none;background:transparent;font-size:14px;font-weight:700;color:var(--gold);text-align:right;width:100px;font-family:'Pretendard',sans-serif;outline:none;"
+          onchange="updateItemAmount('event','${item.id}',this.value.replace(/,/g,''))"
+          onfocus="this.style.background='var(--cream)';this.style.borderRadius='6px';this.style.padding='2px 6px';this.value=this.value.replace(/,/g,'')"
+          onblur="this.style.background='transparent';this.style.padding='0';this.value=Number(this.value.replace(/,/g,'')||0).toLocaleString('ko-KR')">
+        <span style="font-size:13px;font-weight:600;color:var(--gold)">원</span>
+      </td>
+      <td style="white-space:nowrap">
+        <button class="btn-edit" onclick="openModal('event','',${JSON.stringify(item).replace(/"/g,'&quot;')})">✏️</button>
+        <button class="btn-del" onclick="deleteItem('event',${item.id})">✕</button>
+      </td>`;
     body.appendChild(tr);
   });
   return items.reduce((s,i)=>s+i.amount, 0);
@@ -598,7 +764,10 @@ async function render() {
       div.className = 'income-edit';
       div.innerHTML = `<label>${item.cat}</label>
         <span class="inc-name">${item.name}</span>
-        <input type="number" value="${item.amount}" onchange="updateAmount('income',${item.id},this.value)">
+        <input type="text" value="${Number(item.amount).toLocaleString('ko-KR')}"
+          onchange="updateItemAmount('income','${item.id}',this.value.replace(/,/g,''))"
+          onfocus="this.value=this.value.replace(/,/g,'')"
+          onblur="this.value=Number(this.value.replace(/,/g,'')||0).toLocaleString('ko-KR')">
         <span class="unit">원</span>
         <button class="btn-del" onclick="deleteItem('income',${item.id})">✕</button>`;
       incomeList.appendChild(div);
@@ -607,44 +776,30 @@ async function render() {
 
   const gf = renderTable(data, 'groom_fixed_body',  'groom_fixed',  'fixed');
   const bf = renderTable(data, 'bride_fixed_body',  'bride_fixed',  'fixed');
-  const gi = renderTable(data, 'groom_invest_body', 'groom_invest', 'invest');
-  const bi = renderTable(data, 'bride_invest_body', 'bride_invest', 'invest');
   const ga = renderTable(data, 'groom_allow_body',  'groom_allow',  'allowance');
   const ba = renderTable(data, 'bride_allow_body',  'bride_allow',  'allowance');
+  const lv = renderTable(data, 'living_body',       'living',       'living');
+  const gi = renderTable(data, 'groom_invest_body', 'groom_invest', 'invest');
+  const bi = renderTable(data, 'bride_invest_body', 'bride_invest', 'invest');
+  const ev = renderEventTable(data);
 
   document.getElementById('groom_fixed_total').textContent  = fmt(gf);
   document.getElementById('bride_fixed_total').textContent  = fmt(bf);
-  document.getElementById('groom_invest_total').textContent = fmt(gi);
-  document.getElementById('bride_invest_total').textContent = fmt(bi);
   document.getElementById('groom_allow_total').textContent  = fmt(ga);
   document.getElementById('bride_allow_total').textContent  = fmt(ba);
-  document.getElementById('sum_groom').textContent = fmt(gf+gi+ga);
-  document.getElementById('sum_bride').textContent = fmt(bf+bi+ba);
+  document.getElementById('groom_invest_total').textContent = fmt(gi);
+  document.getElementById('bride_invest_total').textContent = fmt(bi);
+
+  document.getElementById('grand_total_fixed').textContent  = fmt(gf+bf);
+  document.getElementById('grand_total_allow').textContent  = fmt(ga+ba);
+  document.getElementById('living_total').textContent       = fmt(lv);
+  document.getElementById('grand_total_invest').textContent = fmt(gi+bi);
+  document.getElementById('event_total').textContent        = fmt(ev);
 
   const totalIncome = (data.income||[]).reduce((s,i)=>s+i.amount,0);
-  const totalFixed  = gf+bf, totalInvest = gi+bi, totalAllow = ga+ba;
-  const freeAmt = totalIncome - totalFixed - totalInvest - totalAllow;
-
   document.getElementById('c_income').textContent = fmt(totalIncome);
-  document.getElementById('c_fixed').textContent  = fmt(totalFixed);
-  document.getElementById('c_invest').textContent = fmt(totalInvest);
-  document.getElementById('c_allow').textContent  = fmt(totalAllow);
-  document.getElementById('c_free').textContent   = fmt(freeAmt);
-  document.getElementById('c_free').style.color   = freeAmt<0 ? 'var(--terracotta)' : 'var(--charcoal)';
-  document.getElementById('freeAmount').textContent = fmt(freeAmt);
-  document.getElementById('freeAmount').style.color = freeAmt<0 ? 'var(--terracotta)' : 'var(--charcoal)';
-
-  const pct = n => totalIncome>0 ? Math.min(100,Math.round(n/totalIncome*100)) : 0;
-  const pF=pct(totalFixed), pI=pct(totalInvest), pA=pct(totalAllow);
-  document.getElementById('pFixedBar').style.width  = pF+'%';
-  document.getElementById('pInvestBar').style.width = pI+'%';
-  document.getElementById('pAllowBar').style.width  = pA+'%';
-  document.getElementById('pFixedPct').textContent  = pF+'%';
-  document.getElementById('pInvestPct').textContent = pI+'%';
-  document.getElementById('pAllowPct').textContent  = pA+'%';
-  document.getElementById('c_fixed_pct').textContent  = `수입의 ${pF}%`;
-  document.getElementById('c_invest_pct').textContent = `수입의 ${pI}%`;
-  document.getElementById('c_allow_pct').textContent  = `수입의 ${pA}%`;
+  document.getElementById('c_fixed').textContent  = fmt(gf+bf);
+  document.getElementById('c_allow').textContent  = fmt(ga+ba);
 }
 
 async function changeMonth(dir) {
