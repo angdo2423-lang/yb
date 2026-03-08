@@ -33,6 +33,93 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  /* ── 로그인 화면 ── */
+  #loginSection {
+    display: none;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    background: var(--cream);
+  }
+  .login-card {
+    background: var(--warm-white);
+    border: 1px solid var(--light-gray);
+    border-radius: 24px;
+    padding: 48px 40px 40px;
+    width: 380px;
+    max-width: 94vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.10);
+    animation: slideUp .3s ease;
+  }
+  .login-logo {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 22px;
+    color: var(--gold);
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 6px;
+    letter-spacing: .04em;
+  }
+  .login-logo span { color: var(--terracotta-light); }
+  .login-sub {
+    text-align: center;
+    font-size: 13px;
+    color: var(--mid-gray);
+    margin-bottom: 32px;
+  }
+  .login-field {
+    margin-bottom: 14px;
+  }
+  .login-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--mid-gray);
+    margin-bottom: 6px;
+    letter-spacing: .03em;
+  }
+  .login-field input {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1.5px solid var(--light-gray);
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: 'Pretendard', sans-serif;
+    background: var(--cream);
+    color: var(--charcoal);
+    outline: none;
+    transition: border-color .2s;
+  }
+  .login-field input:focus { border-color: var(--sage); }
+  .login-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 15px;
+    background: var(--charcoal);
+    color: var(--cream);
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: 'Pretendard', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .2s;
+    letter-spacing: .02em;
+  }
+  .login-btn:hover { background: var(--sage-dark); }
+  .login-btn:disabled { background: #aaa; cursor: not-allowed; }
+  #loginError {
+    margin-top: 12px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--terracotta);
+    font-weight: 600;
+    min-height: 20px;
+  }
+
+  /* ── 메인 앱 ── */
+  #appSection { display: none; }
+
   header {
     background: var(--charcoal); padding: 22px 52px;
     display: flex; align-items: center; justify-content: space-between;
@@ -40,7 +127,22 @@
   }
   .logo { font-family: 'Noto Serif KR', serif; font-size: 22px; color: var(--gold-light); letter-spacing: .04em; font-weight: 700; }
   .logo span { color: var(--terracotta-light); }
+  .header-right { display: flex; align-items: center; gap: 18px; }
   .header-date { font-size: 14px; color: #999; font-weight: 400; letter-spacing: .03em; }
+  .logout-btn {
+    background: transparent;
+    border: 1px solid #555;
+    color: #aaa;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-family: 'Pretendard', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    letter-spacing: .02em;
+  }
+  .logout-btn:hover { border-color: var(--terracotta-light); color: var(--terracotta-light); }
 
   main { max-width: 1240px; margin: 0 auto; padding: 40px 28px 90px; }
 
@@ -152,35 +254,6 @@
   .btn-edit { background:none; border:none; color:#bbb; cursor:pointer; font-size:13px; padding:3px 5px; border-radius:5px; transition:color .2s; }
   .btn-edit:hover { color:var(--groom); }
 
-  /* 고정비 합계 총액 */
-  .fixed-grand-total {
-    background: var(--charcoal); border-radius: 16px; padding: 22px 28px;
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 30px;
-  }
-  .fixed-grand-total .lbl { font-size:15px; color:#aaa; font-weight:600; }
-  .fixed-grand-total .val { font-size:26px; font-weight:800; color:#fff; letter-spacing:-.02em; }
-  .fixed-grand-breakdown { display:flex; gap:20px; align-items:center; }
-  .fgb-item { text-align:center; }
-  .fgb-item .name { font-size:12px; color:#888; margin-bottom:4px; }
-  .fgb-item .num  { font-size:16px; font-weight:700; }
-
-  /* Bottom */
-  .bottom-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px; }
-  .progress-box { background:var(--warm-white); border-radius:20px; padding:28px; border:1px solid var(--light-gray); }
-  .progress-row { display:flex; align-items:center; gap:12px; margin-bottom:13px; }
-  .progress-label { font-size:14px; min-width:78px; font-weight:600; }
-  .progress-bar-bg { flex:1; height:8px; background:var(--light-gray); border-radius:4px; overflow:hidden; }
-  .progress-bar-fill { height:100%; border-radius:4px; transition:width .6s ease; }
-  .fill-terra { background:var(--terracotta); }
-  .fill-gold  { background:var(--gold); }
-  .fill-sage  { background:var(--sage); }
-  .progress-pct { font-size:13px; color:var(--mid-gray); min-width:34px; text-align:right; font-weight:600; }
-  .free-block { margin-top:24px; padding-top:20px; border-top:1px solid var(--light-gray); }
-  .free-block .lbl { font-size:13px; color:var(--mid-gray); margin-bottom:10px; letter-spacing:.03em; font-weight:600; }
-  .free-block .amt-big { font-size:34px; font-weight:800; letter-spacing:-.02em; }
-  .free-block .sub { font-size:12px; color:#bbb; margin-top:5px; font-weight:400; }
-
   /* Modal */
   .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.48); z-index:200; align-items:center; justify-content:center; }
   .modal-overlay.active { display:flex; }
@@ -212,17 +285,38 @@
 <body>
 
 <!-- 로딩바 -->
-<div id="loadingBar" style="display:none;position:fixed;top:0;left:0;right:0;height:3px;z-index:999;background:linear-gradient(90deg,var(--sage),var(--gold),var(--terracotta));animation:loadingAnim 1.2s ease-in-out infinite;">
-</div>
+<div id="loadingBar" style="display:none;position:fixed;top:0;left:0;right:0;height:3px;z-index:999;background:linear-gradient(90deg,var(--sage),var(--gold),var(--terracotta));animation:loadingAnim 1.2s ease-in-out infinite;"></div>
 <style>
-@keyframes loadingAnim {
-  0%{transform:translateX(-100%)} 100%{transform:translateX(100%)}
-}
+@keyframes loadingAnim { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
 </style>
+
+<!-- ── 로그인 화면 ── -->
+<div id="loginSection" style="display:none;min-height:100vh;align-items:center;justify-content:center;">
+  <div class="login-card">
+    <div class="login-logo">도훈 <span>&</span> 아린 가계부 💑</div>
+    <div class="login-sub">계속하려면 로그인하세요</div>
+    <div class="login-field">
+      <label>아이디</label>
+      <input type="text" id="loginUser" placeholder="아이디 입력" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()">
+    </div>
+    <div class="login-field">
+      <label>비밀번호</label>
+      <input type="password" id="loginPass" placeholder="비밀번호 입력" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">로그인</button>
+    <div id="loginError"></div>
+  </div>
+</div>
+
+<!-- ── 메인 앱 ── -->
+<div id="appSection" style="display:none;">
 
 <header>
   <div class="logo">도훈 <span>&</span> 아린 가계부 💑</div>
-  <div class="header-date" id="headerDate"></div>
+  <div class="header-right">
+    <div class="header-date" id="headerDate"></div>
+    <button class="logout-btn" onclick="doLogout()">로그아웃</button>
+  </div>
 </header>
 
 <main>
@@ -273,7 +367,6 @@
     <div class="person-panel groom">
       <div class="person-header">
         <div class="person-name-group"><span>💙 도훈</span></div>
-        
       </div>
       <div class="person-body">
         <div class="sub-header">
@@ -327,7 +420,6 @@
     <div class="person-panel groom">
       <div class="person-header">
         <div class="person-name-group"><span>💙 도훈</span></div>
-        
       </div>
       <div class="person-body">
         <div class="sub-header">
@@ -423,7 +515,6 @@
     <div class="person-panel groom">
       <div class="person-header">
         <div class="person-name-group"><span>💙 도훈</span></div>
-        
       </div>
       <div class="person-body">
         <div class="sub-header">
@@ -495,27 +586,110 @@
   </div>
 </div>
 
+</div> <!-- /appSection -->
+
 <script>
 // ── Google Sheets API ──
 const API_URL = 'https://script.google.com/macros/s/AKfycbwrGwyHJTouObs2nwQHQXyRtD-BeWaZZ65ICQFppFNhuyqmnv1j0kzAb7L47mrNs707Hg/exec';
+
+// ══════════════════════════════════════
+//  인증 (로그인 / 로그아웃 / 토큰검증)
+// ══════════════════════════════════════
+
+async function doLogin() {
+  const username = document.getElementById('loginUser').value.trim();
+  const password = document.getElementById('loginPass').value;
+  const btn      = document.getElementById('loginBtn');
+  const errEl    = document.getElementById('loginError');
+
+  if (!username || !password) { errEl.textContent = '아이디와 비밀번호를 입력해주세요.'; return; }
+
+  btn.disabled = true;
+  btn.textContent = '확인 중...';
+  errEl.textContent = '';
+
+  try {
+    const res  = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'login', username, password })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      sessionStorage.setItem('authToken', data.token);
+      showApp();
+    } else {
+      errEl.textContent = data.message || '로그인에 실패했습니다.';
+    }
+  } catch(e) {
+    errEl.textContent = '네트워크 오류가 발생했습니다.';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '로그인';
+  }
+}
+
+async function verifyToken(token) {
+  try {
+    const res  = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'verify', token })
+    });
+    const data = await res.json();
+    return data.success;
+  } catch(e) { return false; }
+}
+
+function doLogout() {
+  sessionStorage.removeItem('authToken');
+  document.getElementById('appSection').style.display   = 'none';
+  document.getElementById('loginSection').style.display = 'flex';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginError').textContent = '';
+}
+
+function showApp() {
+  document.getElementById('loginSection').style.display = 'none';
+  document.getElementById('appSection').style.display   = 'block';
+  setLoading(true);
+  loadDefaults().then(() => render().then(() => setLoading(false)));
+}
+
+// 페이지 로드 시 토큰 확인
+window.addEventListener('DOMContentLoaded', async () => {
+  const token = sessionStorage.getItem('authToken');
+  if (token) {
+    setLoading(true);
+    const valid = await verifyToken(token);
+    setLoading(false);
+    if (valid) { showApp(); return; }
+    sessionStorage.removeItem('authToken');
+  }
+  // 토큰 없거나 만료 → 로그인 화면
+  document.getElementById('loginSection').style.display = 'flex';
+  setTimeout(() => document.getElementById('loginUser').focus(), 100);
+});
+
+// ══════════════════════════════════════
+//  기존 가계부 로직
+// ══════════════════════════════════════
 
 let currentMonth = new Date().getMonth();
 let currentYear  = new Date().getFullYear();
 let modalType = '', modalPerson = '';
 let editingItem = null;
 let cache = {};
-let _defaults = null; // 스프레드시트에서 불러온 기본값
+let _defaults = null;
 
 function monthKey() { return `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`; }
 
-// 스프레드시트 '기본값' 시트에서 기본값 불러오기
 async function loadDefaults() {
   if (_defaults) return _defaults;
   const fallback = { groom_fixed:[], bride_fixed:[], groom_allow:[], bride_allow:[], event:[] };
   try {
-    const res = await fetch(`${API_URL}?action=getDefaults`);
+    const res  = await fetch(`${API_URL}?action=getDefaults`);
     const json = await res.json();
-    console.log('getDefaults 응답:', JSON.stringify(json));
     if (json && json.status === 'ok' && json.defaults) {
       _defaults = json.defaults;
       return _defaults;
@@ -539,17 +713,15 @@ function emptyData(defaults) {
   };
 }
 
-// 로딩 표시
 function setLoading(on) {
   document.getElementById('loadingBar').style.display = on ? 'block' : 'none';
 }
 
-// Google Sheets에서 불러오기
 async function loadData() {
   const key = `budget_${monthKey()}`;
   if (cache[key]) return cache[key];
   try {
-    const res = await fetch(`${API_URL}?key=${key}`);
+    const res  = await fetch(`${API_URL}?key=${key}`);
     const json = await res.json();
     if (json.status === 'ok' && json.value) {
       const data = JSON.parse(json.value);
@@ -563,7 +735,6 @@ async function loadData() {
   return empty;
 }
 
-// Google Sheets에 저장
 async function saveData(data) {
   const key = `budget_${monthKey()}`;
   cache[key] = data;
@@ -733,7 +904,6 @@ function renderEventTable(data) {
 async function render() {
   const data = await loadData();
 
-  // Income
   const incomeList = document.getElementById('incomeList');
   incomeList.innerHTML = '';
   if (!(data.income||[]).length) {
@@ -798,8 +968,6 @@ function updateMonthDisplay() {
 const now = new Date();
 document.getElementById('headerDate').textContent=`${now.getFullYear()}. ${String(now.getMonth()+1).padStart(2,'0')}. ${String(now.getDate()).padStart(2,'0')}`;
 updateMonthDisplay();
-setLoading(true);
-loadDefaults().then(() => render().then(() => setLoading(false)));
 </script>
 </body>
 </html>
