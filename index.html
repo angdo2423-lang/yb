@@ -653,17 +653,47 @@ function showApp() {
   document.getElementById('loginSection').style.display = 'none';
   document.getElementById('appSection').style.display   = 'block';
   setLoading(true);
-  loadDefaults().then(() => render().then(() => setLoading(false)));
+  // loadDefaults + loadData 병렬 호출로 속도 개선
+  const key = `budget_${monthKey()}`;
+  Promise.all([
+    loadDefaults(),
+    fetch(`${API_URL}?key=${key}`).then(r => r.json()).catch(() => null)
+  ]).then(([defaults, json]) => {
+    if (json && json.status === 'ok' && json.value) {
+      cache[key] = JSON.parse(json.value);
+    } else if (!cache[key]) {
+      cache[key] = emptyData(defaults);
+    }
+    return render();
+  }).then(() => setLoading(false));
 }
 
-// 페이지 로드 시 토큰 확인
+// 페이지 로드 시 토큰 확인 (토큰 검증과 데이터 로딩 병렬화)
 window.addEventListener('DOMContentLoaded', async () => {
   const token = sessionStorage.getItem('authToken');
   if (token) {
     setLoading(true);
-    const valid = await verifyToken(token);
+    // 토큰 검증하면서 동시에 데이터 미리 가져오기
+    const key = `budget_${monthKey()}`;
+    const [valid, defaultsResult, dataResult] = await Promise.all([
+      verifyToken(token),
+      loadDefaults().catch(() => null),
+      fetch(`${API_URL}?key=${key}`).then(r => r.json()).catch(() => null)
+    ]);
+    if (valid) {
+      // 이미 받아온 데이터 캐시에 저장
+      if (dataResult && dataResult.status === 'ok' && dataResult.value) {
+        cache[key] = JSON.parse(dataResult.value);
+      } else if (!cache[key] && defaultsResult) {
+        cache[key] = emptyData(defaultsResult);
+      }
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('appSection').style.display   = 'block';
+      await render();
+      setLoading(false);
+      return;
+    }
     setLoading(false);
-    if (valid) { showApp(); return; }
     sessionStorage.removeItem('authToken');
   }
   // 토큰 없거나 만료 → 로그인 화면
@@ -686,12 +716,17 @@ function monthKey() { return `${currentYear}-${String(currentMonth+1).padStart(2
 
 async function loadDefaults() {
   if (_defaults) return _defaults;
+  // sessionStorage 캐시 확인 (새로고침해도 재호출 없음)
+  const cached = sessionStorage.getItem('defaults_cache');
+  if (cached) { _defaults = JSON.parse(cached); return _defaults; }
+
   const fallback = { groom_fixed:[], bride_fixed:[], groom_allow:[], bride_allow:[], event:[] };
   try {
     const res  = await fetch(`${API_URL}?action=getDefaults`);
     const json = await res.json();
     if (json && json.status === 'ok' && json.defaults) {
       _defaults = json.defaults;
+      sessionStorage.setItem('defaults_cache', JSON.stringify(_defaults));
       return _defaults;
     }
   } catch(e) { console.error('기본값 로드 실패', e); }
