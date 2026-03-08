@@ -196,6 +196,15 @@
 </head>
 <body>
 
+<!-- 로딩바 -->
+<div id="loadingBar" style="display:none;position:fixed;top:0;left:0;right:0;height:3px;z-index:999;background:linear-gradient(90deg,var(--sage),var(--gold),var(--terracotta));animation:loadingAnim 1.2s ease-in-out infinite;">
+</div>
+<style>
+@keyframes loadingAnim {
+  0%{transform:translateX(-100%)} 100%{transform:translateX(100%)}
+}
+</style>
+
 <header>
   <div class="logo">도훈 <span>&</span> 아린 가계부 💑</div>
   <div class="header-date" id="headerDate"></div>
@@ -442,17 +451,56 @@
 </div>
 
 <script>
+// ── Google Sheets API ──
+const API_URL = 'https://script.google.com/macros/s/AKfycbxhZKggsKZ9UFs09Iyx8NfdwpXsGHQZ9X6jUbJeOsopTzEDVW5X7yLzkOMK1zBEo4UXsQ/exec';
+
 let currentMonth = new Date().getMonth();
 let currentYear  = new Date().getFullYear();
 let modalType = '', modalPerson = '';
+let cache = {}; // 로컬 캐시 (빠른 렌더링용)
 
 function monthKey() { return `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`; }
-function loadData() {
-  const raw = localStorage.getItem(`budget2_${monthKey()}`);
-  if (raw) return JSON.parse(raw);
+
+function emptyData() {
   return { income:[], groom_fixed:[], bride_fixed:[], groom_invest:[], bride_invest:[], groom_allow:[], bride_allow:[] };
 }
-function saveData(d) { localStorage.setItem(`budget2_${monthKey()}`, JSON.stringify(d)); }
+
+// 로딩 표시
+function setLoading(on) {
+  document.getElementById('loadingBar').style.display = on ? 'block' : 'none';
+}
+
+// Google Sheets에서 불러오기
+async function loadData() {
+  const key = `budget_${monthKey()}`;
+  if (cache[key]) return cache[key]; // 캐시 있으면 바로 반환
+  try {
+    const res = await fetch(`${API_URL}?key=${key}`);
+    const json = await res.json();
+    if (json.status === 'ok' && json.value) {
+      const data = JSON.parse(json.value);
+      cache[key] = data;
+      return data;
+    }
+  } catch(e) { console.error('불러오기 실패', e); }
+  const empty = emptyData();
+  cache[key] = empty;
+  return empty;
+}
+
+// Google Sheets에 저장
+async function saveData(data) {
+  const key = `budget_${monthKey()}`;
+  cache[key] = data; // 캐시 즉시 업데이트
+  setLoading(true);
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ key, value: JSON.stringify(data) })
+    });
+  } catch(e) { console.error('저장 실패', e); }
+  setLoading(false);
+}
 
 const catOptions = {
   income:    ['월급','부수입','기타'],
@@ -486,32 +534,36 @@ function openModal(type, person) {
 function closeModal(e) { if (e.target===document.getElementById('modalOverlay')) closeModalDirect(); }
 function closeModalDirect() { document.getElementById('modalOverlay').classList.remove('active'); }
 
-function saveItem() {
+async function saveItem() {
   const name = document.getElementById('fName').value.trim();
   const amount = parseInt(document.getElementById('fAmount').value);
   const cat = document.getElementById('fCategory').value;
   if (!name || !amount) { alert('항목명과 금액을 입력해주세요.'); return; }
-  const data = loadData();
+  const data = await loadData();
   const key = modalPerson ? `${modalPerson}_${modalType}` : modalType;
   if (!data[key]) data[key] = [];
   data[key].push({ id: Date.now(), name, cat, amount });
-  saveData(data); closeModalDirect(); render();
+  closeModalDirect();
+  await saveData(data);
+  render();
 }
 
-function deleteItem(key, id) {
-  const data = loadData();
+async function deleteItem(key, id) {
+  const data = await loadData();
   data[key] = (data[key]||[]).filter(i => i.id !== id);
-  saveData(data); render();
+  await saveData(data);
+  render();
 }
-function updateAmount(key, id, val) {
-  const data = loadData();
+
+async function updateAmount(key, id, val) {
+  const data = await loadData();
   const item = (data[key]||[]).find(i => i.id === id);
-  if (item) { item.amount = parseInt(val)||0; saveData(data); render(); }
+  if (item) { item.amount = parseInt(val)||0; await saveData(data); render(); }
 }
+
 function fmt(n) { return n.toLocaleString('ko-KR') + '원'; }
 
-function renderTable(bodyId, key, type) {
-  const data = loadData();
+function renderTable(data, bodyId, key, type) {
   const body = document.getElementById(bodyId);
   body.innerHTML = '';
   const items = data[key] || [];
@@ -532,8 +584,8 @@ function renderTable(bodyId, key, type) {
   return items.reduce((s,i)=>s+i.amount, 0);
 }
 
-function render() {
-  const data = loadData();
+async function render() {
+  const data = await loadData();
 
   // Income
   const incomeList = document.getElementById('incomeList');
@@ -553,12 +605,12 @@ function render() {
     });
   }
 
-  const gf = renderTable('groom_fixed_body',  'groom_fixed',  'fixed');
-  const bf = renderTable('bride_fixed_body',  'bride_fixed',  'fixed');
-  const gi = renderTable('groom_invest_body', 'groom_invest', 'invest');
-  const bi = renderTable('bride_invest_body', 'bride_invest', 'invest');
-  const ga = renderTable('groom_allow_body',  'groom_allow',  'allowance');
-  const ba = renderTable('bride_allow_body',  'bride_allow',  'allowance');
+  const gf = renderTable(data, 'groom_fixed_body',  'groom_fixed',  'fixed');
+  const bf = renderTable(data, 'bride_fixed_body',  'bride_fixed',  'fixed');
+  const gi = renderTable(data, 'groom_invest_body', 'groom_invest', 'invest');
+  const bi = renderTable(data, 'bride_invest_body', 'bride_invest', 'invest');
+  const ga = renderTable(data, 'groom_allow_body',  'groom_allow',  'allowance');
+  const ba = renderTable(data, 'bride_allow_body',  'bride_allow',  'allowance');
 
   document.getElementById('groom_fixed_total').textContent  = fmt(gf);
   document.getElementById('bride_fixed_total').textContent  = fmt(bf);
@@ -595,20 +647,24 @@ function render() {
   document.getElementById('c_allow_pct').textContent  = `수입의 ${pA}%`;
 }
 
-function changeMonth(dir) {
+async function changeMonth(dir) {
   currentMonth += dir;
   if (currentMonth>11){currentMonth=0;currentYear++;}
   if (currentMonth<0){currentMonth=11;currentYear--;}
-  updateMonthDisplay(); render();
+  updateMonthDisplay();
+  await render();
 }
 function updateMonthDisplay() {
   const months=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
   document.getElementById('monthTitle').textContent=`${currentYear}년 ${months[currentMonth]}`;
 }
 
+// ── Init ──
 const now = new Date();
 document.getElementById('headerDate').textContent=`${now.getFullYear()}. ${String(now.getMonth()+1).padStart(2,'0')}. ${String(now.getDate()).padStart(2,'0')}`;
-updateMonthDisplay(); render();
+updateMonthDisplay();
+setLoading(true);
+render().then(() => setLoading(false));
 </script>
 </body>
 </html>
