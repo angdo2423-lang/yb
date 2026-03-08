@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>도훈 & 아린 가계부</title>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F7F5F1;
+    --warm-white: #FDFCFA;
+    --sage: #7A9E7E;
+    --sage-dark: #4E7A52;
+    --terracotta: #C0634A;
+    --terracotta-light: #E5A48A;
+    --charcoal: #1E1E1E;
+    --mid-gray: #6B6B6B;
+    --light-gray: #E2DDD7;
+    --gold: #C4993E;
+    --gold-light: #EDD98A;
+    --groom: #4A72A0;
+    --groom-light: #C8DDEF;
+    --groom-bg: #EAF2FA;
+    --bride: #A84F6A;
+    --bride-light: #ECC8D4;
+    --bride-bg: #FAF0F4;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+    background: var(--cream); color: var(--charcoal); min-height: 100vh;
+    font-size: 15px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  header {
+    background: var(--charcoal); padding: 22px 52px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 24px rgba(0,0,0,0.18);
+  }
+  .logo { font-family: 'Noto Serif KR', serif; font-size: 22px; color: var(--gold-light); letter-spacing: .04em; font-weight: 700; }
+  .logo span { color: var(--terracotta-light); }
+  .header-date { font-size: 14px; color: #999; font-weight: 400; letter-spacing: .03em; }
+
+  main { max-width: 1240px; margin: 0 auto; padding: 40px 28px 90px; }
+
+  .month-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 34px; }
+  .month-bar h2 { font-family: 'Noto Serif KR', serif; font-size: 30px; font-weight: 700; letter-spacing: -.01em; }
+  .month-nav { display: flex; gap: 8px; margin-left: auto; }
+  .month-nav button {
+    background: var(--charcoal); color: var(--cream); border: none;
+    width: 38px; height: 38px; border-radius: 50%; font-size: 18px; cursor: pointer;
+    transition: background .2s; display: flex; align-items: center; justify-content: center;
+  }
+  .month-nav button:hover { background: var(--sage-dark); }
+
+  /* Summary */
+  .summary-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 34px; }
+  .summary-card {
+    background: var(--warm-white); border-radius: 16px; padding: 22px 18px;
+    border: 1px solid var(--light-gray); position: relative; overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .summary-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,.09); }
+  .summary-card::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; border-radius: 16px 16px 0 0; }
+  .card-income::before { background: var(--sage); }
+  .card-fixed::before  { background: var(--terracotta); }
+  .card-invest::before { background: var(--gold); }
+  .card-allow::before  { background: var(--sage-dark); }
+  .card-remain::before { background: var(--charcoal); }
+  .card-label { font-size: 12px; color: var(--mid-gray); font-weight: 600; margin-bottom: 8px; letter-spacing: .03em; }
+  .card-amount { font-size: 21px; font-weight: 800; letter-spacing: -.02em; }
+  .card-amount.pos { color: var(--sage-dark); }
+  .card-amount.neg { color: var(--terracotta); }
+  .card-sub { font-size: 12px; color: #bbb; margin-top: 6px; font-weight: 400; }
+
+  /* Income box */
+  .section-box { background: var(--warm-white); border-radius: 20px; padding: 28px; border: 1px solid var(--light-gray); margin-bottom: 30px; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .section-title { font-family: 'Noto Serif KR', serif; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+  .dot-green { width:11px; height:11px; border-radius:50%; background:var(--sage); display:inline-block; }
+  .income-edit {
+    display:flex; align-items:center; gap:12px; background:var(--cream);
+    border-radius:12px; padding:14px 18px; margin-bottom:10px; border:1px solid var(--light-gray);
+  }
+  .income-edit label { font-size:13px; color:var(--mid-gray); min-width:55px; font-weight:500; }
+  .income-edit .inc-name { font-size:15px; font-weight:600; flex:1; }
+  .income-edit input[type=number] {
+    border:none; background:transparent; font-size:19px; font-weight:800;
+    font-family:'Pretendard',sans-serif; color:var(--sage-dark); outline:none; text-align:right; width:140px;
+    letter-spacing: -.02em;
+  }
+  .income-edit span.unit { font-size:14px; color:var(--mid-gray); font-weight:500; }
+
+  /* Divider */
+  .section-divider { display:flex; align-items:center; gap:16px; margin: 6px 0 22px; }
+  .section-divider-line { flex:1; height:1px; background:var(--light-gray); }
+  .section-divider-label { font-family:'Noto Serif KR',serif; font-size:16px; color:var(--mid-gray); white-space:nowrap; font-weight:600; letter-spacing:.02em; }
+
+  /* Couple grid */
+  .couple-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:30px; }
+
+  /* Person panel */
+  .person-panel { border-radius:20px; border:2px solid transparent; overflow:hidden; }
+  .person-panel.groom { border-color:var(--groom-light); }
+  .person-panel.bride { border-color:var(--bride-light); }
+  .person-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:17px 22px 15px; font-family:'Noto Serif KR',serif; font-size:17px; font-weight:700;
+  }
+  .person-panel.groom .person-header { background:var(--groom-bg); color:var(--groom); }
+  .person-panel.bride .person-header { background:var(--bride-bg); color:var(--bride); }
+  .person-name-group { display:flex; align-items:center; gap:10px; }
+  .person-badge { font-size:11px; font-weight:700; padding:4px 11px; border-radius:20px; letter-spacing:.06em; font-family:'Pretendard',sans-serif; }
+  .groom .person-badge { background:var(--groom); color:#fff; }
+  .bride .person-badge { background:var(--bride); color:#fff; }
+  .person-total { font-size:21px; font-weight:800; letter-spacing:-.02em; }
+  .person-body { background:var(--warm-white); padding:20px 22px 22px; }
+
+  /* Sub section */
+  .sub-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .sub-title { font-size:14px; font-weight:700; color:var(--charcoal); display:flex; align-items:center; gap:8px; }
+  .dot { width:9px; height:9px; border-radius:50%; display:inline-block; }
+  .dot-terra { background:var(--terracotta); }
+  .dot-gold  { background:var(--gold); }
+  .dot-sage  { background:var(--sage); }
+
+  /* Table */
+  .budget-table { width:100%; border-collapse:collapse; }
+  .budget-table th { font-size:12px; color:var(--mid-gray); text-align:left; padding:0 8px 10px; font-weight:600; letter-spacing:.03em; border-bottom:1.5px solid var(--light-gray); }
+  .budget-table td { padding:11px 8px; font-size:14px; border-bottom:1px solid #EDE9E3; font-weight:500; }
+  .budget-table tr:last-child td { border-bottom:none; }
+  .budget-table tr:hover td { background:var(--cream); }
+  .amt { text-align:right; font-weight:700; letter-spacing:-.01em; }
+  .amt.out   { color:var(--terracotta); }
+  .amt.inv   { color:var(--gold); }
+  .amt.allow { color:var(--sage-dark); }
+  .tag { display:inline-block; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700; }
+  .tag-fixed  { background:#FDEEE8; color:var(--terracotta); }
+  .tag-invest { background:#FDF7E5; color:var(--gold); }
+
+  /* Buttons */
+  .btn-add {
+    display:flex; align-items:center; gap:6px; background:transparent;
+    border:1.5px dashed var(--light-gray); color:var(--mid-gray); padding:7px 14px;
+    border-radius:8px; font-size:13px; font-family:'Pretendard',sans-serif; font-weight:600;
+    cursor:pointer; transition:all .2s; white-space:nowrap;
+  }
+  .btn-add:hover { border-color:var(--sage); color:var(--sage-dark); background:#EBF3EC; }
+  .btn-del { background:none; border:none; color:#ccc; cursor:pointer; font-size:14px; padding:3px 6px; border-radius:5px; transition:color .2s; }
+  .btn-del:hover { color:var(--terracotta); }
+
+  /* Bottom */
+  .bottom-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px; }
+  .progress-box { background:var(--warm-white); border-radius:20px; padding:28px; border:1px solid var(--light-gray); }
+  .progress-row { display:flex; align-items:center; gap:12px; margin-bottom:13px; }
+  .progress-label { font-size:14px; min-width:78px; font-weight:600; }
+  .progress-bar-bg { flex:1; height:8px; background:var(--light-gray); border-radius:4px; overflow:hidden; }
+  .progress-bar-fill { height:100%; border-radius:4px; transition:width .6s ease; }
+  .fill-terra { background:var(--terracotta); }
+  .fill-gold  { background:var(--gold); }
+  .fill-sage  { background:var(--sage); }
+  .progress-pct { font-size:13px; color:var(--mid-gray); min-width:34px; text-align:right; font-weight:600; }
+  .free-block { margin-top:24px; padding-top:20px; border-top:1px solid var(--light-gray); }
+  .free-block .lbl { font-size:13px; color:var(--mid-gray); margin-bottom:10px; letter-spacing:.03em; font-weight:600; }
+  .free-block .amt-big { font-size:34px; font-weight:800; letter-spacing:-.02em; }
+  .free-block .sub { font-size:12px; color:#bbb; margin-top:5px; font-weight:400; }
+
+  /* Modal */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.48); z-index:200; align-items:center; justify-content:center; }
+  .modal-overlay.active { display:flex; }
+  .modal { background:var(--warm-white); border-radius:22px; padding:36px; width:420px; max-width:94vw; box-shadow:0 24px 64px rgba(0,0,0,.22); animation:slideUp .25s ease; }
+  @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+  .modal h3 { font-family:'Noto Serif KR',serif; font-size:19px; font-weight:700; margin-bottom:24px; }
+  .form-group { margin-bottom:16px; }
+  .form-group label { display:block; font-size:12px; color:var(--mid-gray); margin-bottom:6px; font-weight:600; letter-spacing:.03em; }
+  .form-group input, .form-group select {
+    width:100%; padding:11px 15px; border:1.5px solid var(--light-gray); border-radius:10px;
+    font-size:15px; font-family:'Pretendard',sans-serif; font-weight:500;
+    background:var(--cream); color:var(--charcoal); outline:none; transition:border-color .2s;
+  }
+  .form-group input:focus, .form-group select:focus { border-color:var(--sage); }
+  .modal-btns { display:flex; gap:10px; margin-top:22px; }
+  .btn-cancel { flex:1; padding:13px; border:1.5px solid var(--light-gray); border-radius:10px; background:transparent; font-family:'Pretendard',sans-serif; font-size:14px; font-weight:600; cursor:pointer; color:var(--mid-gray); transition:all .2s; }
+  .btn-cancel:hover { background:var(--light-gray); }
+  .btn-save { flex:2; padding:13px; border:none; border-radius:10px; background:var(--charcoal); color:var(--cream); font-family:'Pretendard',sans-serif; font-size:15px; font-weight:700; cursor:pointer; transition:background .2s; }
+  .btn-save:hover { background:var(--sage-dark); }
+
+  @media (max-width:760px) {
+    header { padding:18px 20px; }
+    main { padding:22px 16px 60px; }
+    .summary-grid { grid-template-columns:1fr 1fr; }
+    .couple-grid, .bottom-grid { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">도훈 <span>&</span> 아린 가계부 💑</div>
+  <div class="header-date" id="headerDate"></div>
+</header>
+
+<main>
+
+  <div class="month-bar">
+    <h2 id="monthTitle"></h2>
+    <div class="month-nav">
+      <button onclick="changeMonth(-1)">‹</button>
+      <button onclick="changeMonth(1)">›</button>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-grid">
+    <div class="summary-card card-income">
+      <div class="card-label">💰 총 수입</div>
+      <div class="card-amount pos" id="c_income">0원</div>
+      <div class="card-sub">합산 월수입</div>
+    </div>
+    <div class="summary-card card-fixed">
+      <div class="card-label">🏠 총 고정비</div>
+      <div class="card-amount neg" id="c_fixed">0원</div>
+      <div class="card-sub" id="c_fixed_pct">수입의 0%</div>
+    </div>
+    <div class="summary-card card-invest">
+      <div class="card-label">📈 총 투자·저축</div>
+      <div class="card-amount" style="color:var(--gold)" id="c_invest">0원</div>
+      <div class="card-sub" id="c_invest_pct">수입의 0%</div>
+    </div>
+    <div class="summary-card card-allow">
+      <div class="card-label">👛 총 용돈</div>
+      <div class="card-amount" style="color:var(--sage-dark)" id="c_allow">0원</div>
+      <div class="card-sub" id="c_allow_pct">수입의 0%</div>
+    </div>
+    <div class="summary-card card-remain">
+      <div class="card-label">🎉 자유 사용</div>
+      <div class="card-amount" id="c_free">0원</div>
+      <div class="card-sub">남은 금액</div>
+    </div>
+  </div>
+
+  <!-- Income -->
+  <div class="section-box">
+    <div class="section-header">
+      <div class="section-title"><span class="dot-green"></span> 월급 / 수입</div>
+      <button class="btn-add" onclick="openModal('income','')">+ 수입 추가</button>
+    </div>
+    <div id="incomeList"></div>
+  </div>
+
+  <!-- 고정비용 -->
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-label">🏠 고정비용</div>
+    <div class="section-divider-line"></div>
+  </div>
+  <div class="couple-grid">
+    <div class="person-panel groom">
+      <div class="person-header">
+        <div class="person-name-group"><span>💙 도훈</span></div>
+        <span class="person-total" id="groom_fixed_total" style="color:var(--groom)">0원</span>
+      </div>
+      <div class="person-body">
+        <div class="sub-header">
+          <div class="sub-title"><span class="dot dot-terra"></span> 고정비 항목</div>
+          <button class="btn-add" onclick="openModal('fixed','groom')">+ 추가</button>
+        </div>
+        <table class="budget-table">
+          <thead><tr><th>항목</th><th>분류</th><th class="amt">금액</th><th></th></tr></thead>
+          <tbody id="groom_fixed_body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="person-panel bride">
+      <div class="person-header">
+        <div class="person-name-group"><span>🩷 아린</span></div>
+        <span class="person-total" id="bride_fixed_total" style="color:var(--bride)">0원</span>
+      </div>
+      <div class="person-body">
+        <div class="sub-header">
+          <div class="sub-title"><span class="dot dot-terra"></span> 고정비 항목</div>
+          <button class="btn-add" onclick="openModal('fixed','bride')">+ 추가</button>
+        </div>
+        <table class="budget-table">
+          <thead><tr><th>항목</th><th>분류</th><th class="amt">금액</th><th></th></tr></thead>
+          <tbody id="bride_fixed_body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 투자/저축 -->
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-label">📈 투자 / 저축</div>
+    <div class="section-divider-line"></div>
+  </div>
+  <div class="couple-grid">
+    <div class="person-panel groom">
+      <div class="person-header">
+        <div class="person-name-group"><span>💙 도훈</span></div>
+        <span class="person-total" id="groom_invest_total" style="color:var(--groom)">0원</span>
+      </div>
+      <div class="person-body">
+        <div class="sub-header">
+          <div class="sub-title"><span class="dot dot-gold"></span> 투자·저축 항목</div>
+          <button class="btn-add" onclick="openModal('invest','groom')">+ 추가</button>
+        </div>
+        <table class="budget-table">
+          <thead><tr><th>항목</th><th>유형</th><th class="amt">금액</th><th></th></tr></thead>
+          <tbody id="groom_invest_body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="person-panel bride">
+      <div class="person-header">
+        <div class="person-name-group"><span>🩷 아린</span></div>
+        <span class="person-total" id="bride_invest_total" style="color:var(--bride)">0원</span>
+      </div>
+      <div class="person-body">
+        <div class="sub-header">
+          <div class="sub-title"><span class="dot dot-gold"></span> 투자·저축 항목</div>
+          <button class="btn-add" onclick="openModal('invest','bride')">+ 추가</button>
+        </div>
+        <table class="budget-table">
+          <thead><tr><th>항목</th><th>유형</th><th class="amt">금액</th><th></th></tr></thead>
+          <tbody id="bride_invest_body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 용돈 -->
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-label">👛 용돈</div>
+    <div class="section-divider-line"></div>
+  </div>
+  <div class="couple-grid">
+    <div class="person-panel groom">
+      <div class="person-header">
+        <div class="person-name-group"><span>💙 도훈</span></div>
+        <span class="person-total" id="groom_allow_total" style="color:var(--groom)">0원</span>
+      </div>
+      <div class="person-body">
+        <div class="sub-header">
+          <div class="sub-title"><span class="dot dot-sage"></span> 용돈 항목</div>
+          <button class="btn-add" onclick="openModal('allowance','groom')">+ 추가</button>
+        </div>
+        <table class="budget-table">
+          <thead><tr><th>항목</th><th class="amt">금액</th><th></th></tr></thead>
+          <tbody id="groom_allow_body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="person-panel bride">
+      <div class="person-header">
+        <div class="person-name-group"><span>🩷 아린</span></div>
+        <span class="person-total" id="bride_allow_total" style="color:var(--bride)">0원</span>
+      </div>
+      <div class="person-body">
+        <div class="sub-header">
+          <div class="sub-title"><span class="dot dot-sage"></span> 용돈 항목</div>
+          <button class="btn-add" onclick="openModal('allowance','bride')">+ 추가</button>
+        </div>
+        <table class="budget-table">
+          <thead><tr><th>항목</th><th class="amt">금액</th><th></th></tr></thead>
+          <tbody id="bride_allow_body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom -->
+  <div class="bottom-grid">
+    <div class="progress-box">
+      <div class="section-title" style="margin-bottom:18px">
+        <span class="dot" style="background:var(--charcoal);width:10px;height:10px"></span> 예산 비율
+      </div>
+      <div class="progress-row">
+        <span class="progress-label" style="color:var(--terracotta)">고정비</span>
+        <div class="progress-bar-bg"><div class="progress-bar-fill fill-terra" id="pFixedBar" style="width:0%"></div></div>
+        <span class="progress-pct" id="pFixedPct">0%</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label" style="color:var(--gold)">투자·저축</span>
+        <div class="progress-bar-bg"><div class="progress-bar-fill fill-gold" id="pInvestBar" style="width:0%"></div></div>
+        <span class="progress-pct" id="pInvestPct">0%</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label" style="color:var(--sage-dark)">용돈</span>
+        <div class="progress-bar-bg"><div class="progress-bar-fill fill-sage" id="pAllowBar" style="width:0%"></div></div>
+        <span class="progress-pct" id="pAllowPct">0%</span>
+      </div>
+    </div>
+    <div class="progress-box">
+      <div class="section-title" style="margin-bottom:18px">
+        <span class="dot" style="background:var(--sage);width:10px;height:10px"></span> 이번 달 요약
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="background:var(--groom-bg);border-radius:12px;padding:14px 16px">
+          <div style="font-size:13px;color:var(--groom);font-weight:700;margin-bottom:6px">💙 도훈 지출 합계</div>
+          <div style="font-size:18px;font-weight:800;color:var(--groom);letter-spacing:-.02em" id="sum_groom">0원</div>
+        </div>
+        <div style="background:var(--bride-bg);border-radius:12px;padding:14px 16px">
+          <div style="font-size:13px;color:var(--bride);font-weight:700;margin-bottom:6px">🩷 아린 지출 합계</div>
+          <div style="font-size:18px;font-weight:800;color:var(--bride);letter-spacing:-.02em" id="sum_bride">0원</div>
+        </div>
+      </div>
+      <div class="free-block">
+        <div class="lbl">자유 사용 가능 금액</div>
+        <div class="amt-big" id="freeAmount">0원</div>
+        <div class="sub">수입 − 고정비 − 투자 − 용돈</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <h3 id="modalTitle">항목 추가</h3>
+    <div class="form-group" id="fCategoryGroup">
+      <label>분류</label>
+      <select id="fCategory"></select>
+    </div>
+    <div class="form-group">
+      <label>항목명</label>
+      <input type="text" id="fName" placeholder="예) 월세, 청약저축...">
+    </div>
+    <div class="form-group">
+      <label>금액 (원)</label>
+      <input type="number" id="fAmount" placeholder="예) 500000">
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModalDirect()">취소</button>
+      <button class="btn-save" onclick="saveItem()">저장하기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentMonth = new Date().getMonth();
+let currentYear  = new Date().getFullYear();
+let modalType = '', modalPerson = '';
+
+function monthKey() { return `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`; }
+function loadData() {
+  const raw = localStorage.getItem(`budget2_${monthKey()}`);
+  if (raw) return JSON.parse(raw);
+  return { income:[], groom_fixed:[], bride_fixed:[], groom_invest:[], bride_invest:[], groom_allow:[], bride_allow:[] };
+}
+function saveData(d) { localStorage.setItem(`budget2_${monthKey()}`, JSON.stringify(d)); }
+
+const catOptions = {
+  income:    ['월급','부수입','기타'],
+  fixed:     ['주거','교통','통신','보험','구독','식비','의료','기타'],
+  invest:    ['주식','펀드','ETF','청약','예·적금','암호화폐','기타'],
+  allowance: ['용돈','교통비','식비','기타']
+};
+const modalTitles = {
+  income:'수입 추가',
+  fixed_groom:'💙 도훈 고정비 추가', fixed_bride:'🩷 아린 고정비 추가',
+  invest_groom:'💙 도훈 투자·저축 추가', invest_bride:'🩷 아린 투자·저축 추가',
+  allowance_groom:'💙 도훈 용돈 추가', allowance_bride:'🩷 아린 용돈 추가',
+};
+
+function openModal(type, person) {
+  modalType = type; modalPerson = person;
+  const key = person ? `${type}_${person}` : type;
+  document.getElementById('modalTitle').textContent = modalTitles[key] || '항목 추가';
+  document.getElementById('fName').value = '';
+  document.getElementById('fAmount').value = '';
+  const sel = document.getElementById('fCategory');
+  sel.innerHTML = '';
+  catOptions[type].forEach(o => {
+    const opt = document.createElement('option'); opt.value = o; opt.textContent = o;
+    sel.appendChild(opt);
+  });
+  document.getElementById('fCategoryGroup').style.display = type === 'allowance' ? 'none' : '';
+  document.getElementById('modalOverlay').classList.add('active');
+  setTimeout(() => document.getElementById('fName').focus(), 100);
+}
+function closeModal(e) { if (e.target===document.getElementById('modalOverlay')) closeModalDirect(); }
+function closeModalDirect() { document.getElementById('modalOverlay').classList.remove('active'); }
+
+function saveItem() {
+  const name = document.getElementById('fName').value.trim();
+  const amount = parseInt(document.getElementById('fAmount').value);
+  const cat = document.getElementById('fCategory').value;
+  if (!name || !amount) { alert('항목명과 금액을 입력해주세요.'); return; }
+  const data = loadData();
+  const key = modalPerson ? `${modalPerson}_${modalType}` : modalType;
+  if (!data[key]) data[key] = [];
+  data[key].push({ id: Date.now(), name, cat, amount });
+  saveData(data); closeModalDirect(); render();
+}
+
+function deleteItem(key, id) {
+  const data = loadData();
+  data[key] = (data[key]||[]).filter(i => i.id !== id);
+  saveData(data); render();
+}
+function updateAmount(key, id, val) {
+  const data = loadData();
+  const item = (data[key]||[]).find(i => i.id === id);
+  if (item) { item.amount = parseInt(val)||0; saveData(data); render(); }
+}
+function fmt(n) { return n.toLocaleString('ko-KR') + '원'; }
+
+function renderTable(bodyId, key, type) {
+  const data = loadData();
+  const body = document.getElementById(bodyId);
+  body.innerHTML = '';
+  const items = data[key] || [];
+  if (!items.length) {
+    const cols = type === 'allowance' ? 3 : 4;
+    body.innerHTML = `<tr><td colspan="${cols}" style="text-align:center;padding:14px;color:#ccc;font-size:12px">항목을 추가해보세요</td></tr>`;
+    return 0;
+  }
+  items.forEach(item => {
+    const tr = document.createElement('tr');
+    const tagClass = type==='invest' ? 'tag-invest' : 'tag-fixed';
+    const amtClass = type==='invest' ? 'inv' : type==='allowance' ? 'allow' : 'out';
+    const catCell  = type==='allowance' ? '' : `<td><span class="tag ${tagClass}">${item.cat||''}</span></td>`;
+    tr.innerHTML = `<td>${item.name}</td>${catCell}<td class="amt ${amtClass}">${fmt(item.amount)}</td>
+      <td><button class="btn-del" onclick="deleteItem('${key}',${item.id})">✕</button></td>`;
+    body.appendChild(tr);
+  });
+  return items.reduce((s,i)=>s+i.amount, 0);
+}
+
+function render() {
+  const data = loadData();
+
+  // Income
+  const incomeList = document.getElementById('incomeList');
+  incomeList.innerHTML = '';
+  if (!(data.income||[]).length) {
+    incomeList.innerHTML = '<div style="text-align:center;padding:18px;color:#ccc;font-size:13px">수입을 추가해보세요 💸</div>';
+  } else {
+    data.income.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'income-edit';
+      div.innerHTML = `<label>${item.cat}</label>
+        <span class="inc-name">${item.name}</span>
+        <input type="number" value="${item.amount}" onchange="updateAmount('income',${item.id},this.value)">
+        <span class="unit">원</span>
+        <button class="btn-del" onclick="deleteItem('income',${item.id})">✕</button>`;
+      incomeList.appendChild(div);
+    });
+  }
+
+  const gf = renderTable('groom_fixed_body',  'groom_fixed',  'fixed');
+  const bf = renderTable('bride_fixed_body',  'bride_fixed',  'fixed');
+  const gi = renderTable('groom_invest_body', 'groom_invest', 'invest');
+  const bi = renderTable('bride_invest_body', 'bride_invest', 'invest');
+  const ga = renderTable('groom_allow_body',  'groom_allow',  'allowance');
+  const ba = renderTable('bride_allow_body',  'bride_allow',  'allowance');
+
+  document.getElementById('groom_fixed_total').textContent  = fmt(gf);
+  document.getElementById('bride_fixed_total').textContent  = fmt(bf);
+  document.getElementById('groom_invest_total').textContent = fmt(gi);
+  document.getElementById('bride_invest_total').textContent = fmt(bi);
+  document.getElementById('groom_allow_total').textContent  = fmt(ga);
+  document.getElementById('bride_allow_total').textContent  = fmt(ba);
+  document.getElementById('sum_groom').textContent = fmt(gf+gi+ga);
+  document.getElementById('sum_bride').textContent = fmt(bf+bi+ba);
+
+  const totalIncome = (data.income||[]).reduce((s,i)=>s+i.amount,0);
+  const totalFixed  = gf+bf, totalInvest = gi+bi, totalAllow = ga+ba;
+  const freeAmt = totalIncome - totalFixed - totalInvest - totalAllow;
+
+  document.getElementById('c_income').textContent = fmt(totalIncome);
+  document.getElementById('c_fixed').textContent  = fmt(totalFixed);
+  document.getElementById('c_invest').textContent = fmt(totalInvest);
+  document.getElementById('c_allow').textContent  = fmt(totalAllow);
+  document.getElementById('c_free').textContent   = fmt(freeAmt);
+  document.getElementById('c_free').style.color   = freeAmt<0 ? 'var(--terracotta)' : 'var(--charcoal)';
+  document.getElementById('freeAmount').textContent = fmt(freeAmt);
+  document.getElementById('freeAmount').style.color = freeAmt<0 ? 'var(--terracotta)' : 'var(--charcoal)';
+
+  const pct = n => totalIncome>0 ? Math.min(100,Math.round(n/totalIncome*100)) : 0;
+  const pF=pct(totalFixed), pI=pct(totalInvest), pA=pct(totalAllow);
+  document.getElementById('pFixedBar').style.width  = pF+'%';
+  document.getElementById('pInvestBar').style.width = pI+'%';
+  document.getElementById('pAllowBar').style.width  = pA+'%';
+  document.getElementById('pFixedPct').textContent  = pF+'%';
+  document.getElementById('pInvestPct').textContent = pI+'%';
+  document.getElementById('pAllowPct').textContent  = pA+'%';
+  document.getElementById('c_fixed_pct').textContent  = `수입의 ${pF}%`;
+  document.getElementById('c_invest_pct').textContent = `수입의 ${pI}%`;
+  document.getElementById('c_allow_pct').textContent  = `수입의 ${pA}%`;
+}
+
+function changeMonth(dir) {
+  currentMonth += dir;
+  if (currentMonth>11){currentMonth=0;currentYear++;}
+  if (currentMonth<0){currentMonth=11;currentYear--;}
+  updateMonthDisplay(); render();
+}
+function updateMonthDisplay() {
+  const months=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  document.getElementById('monthTitle').textContent=`${currentYear}년 ${months[currentMonth]}`;
+}
+
+const now = new Date();
+document.getElementById('headerDate').textContent=`${now.getFullYear()}. ${String(now.getMonth()+1).padStart(2,'0')}. ${String(now.getDate()).padStart(2,'0')}`;
+updateMonthDisplay(); render();
+</script>
+</body>
+</html>
