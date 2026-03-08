@@ -311,7 +311,7 @@
     </div>
   </div>
 
-  <!-- 고정비 합계줄 (패널 아래, 같은 섹션 느낌) -->
+  <!-- 고정비 합계줄 -->
   <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;margin:-18px 0 30px;padding:14px 22px;background:var(--warm-white);border-radius:0 0 16px 16px;border:1px solid var(--light-gray);border-top:none">
     <span style="font-size:14px;color:var(--mid-gray);font-weight:600">🏠 고정비 합계</span>
     <span style="font-size:22px;font-weight:800;color:var(--terracotta);letter-spacing:-.02em" id="grand_total_fixed">0원</span>
@@ -499,61 +499,42 @@
 // ── Google Sheets API ──
 const API_URL = 'https://script.google.com/macros/s/AKfycbxhZKggsKZ9UFs09Iyx8NfdwpXsGHQZ9X6jUbJeOsopTzEDVW5X7yLzkOMK1zBEo4UXsQ/exec';
 
-// ── 기본값 (매월 자동으로 채워질 항목들) ──
-const DEFAULTS = {
-  groom_fixed: [
-    { id: 'd1',  date:'매월 5일',  name:'도약계좌',      cat:'저축',  amount:700000 },
-    { id: 'd2',  date:'매월 5일',  name:'청약',          cat:'저축',  amount:20000  },
-    { id: 'd3',  date:'매월 5일',  name:'보험',          cat:'보험',  amount:80000  },
-    { id: 'd4',  date:'매월 10일', name:'대출이자',       cat:'주거',  amount:130000 },
-    { id: 'd5',  date:'매월 15일', name:'내일채움공제',   cat:'저축',  amount:120000 },
-    { id: 'd6',  date:'매월 20일', name:'모임통장',       cat:'기타',  amount:10000  },
-    { id: 'd7',  date:'매월 20일', name:'도시가스',       cat:'주거',  amount:40000  },
-    { id: 'd8',  date:'매월 21일', name:'핸드폰',        cat:'통신',  amount:30000  },
-    { id: 'd9',  date:'매월 21일', name:'교통비',        cat:'교통',  amount:60000  },
-    { id: 'd10', date:'매월 24일', name:'관리비',        cat:'주거',  amount:160000 },
-    { id: 'd11', date:'매월 25일', name:'월세',          cat:'주거',  amount:330000 },
-  ],
-  bride_fixed: [
-    { id: 'b1',  date:'매월 1일',  name:'도약계좌',      cat:'저축',  amount:700000 },
-    { id: 'b2',  date:'매월 5일',  name:'청약',          cat:'저축',  amount:20000  },
-    { id: 'b3',  date:'매월 10일', name:'핸드폰',        cat:'통신',  amount:20000  },
-    { id: 'b4',  date:'매월 10일', name:'농협보험',      cat:'보험',  amount:70000  },
-    { id: 'b5',  date:'매월 15일', name:'DB보험',        cat:'보험',  amount:50000  },
-    { id: 'b6',  date:'매월 20일', name:'여행적금',      cat:'저축',  amount:50000  },
-    { id: 'b7',  date:'매월 11일', name:'화재보험',      cat:'보험',  amount:13000  },
-    { id: 'b8',  date:'매달',      name:'교통비',        cat:'교통',  amount:60000  },
-  ],
-  groom_allow: [
-    { id: 'ga1', date:'', name:'용돈', cat:'용돈', amount:200000 },
-  ],
-  bride_allow: [
-    { id: 'ba1', date:'', name:'용돈', cat:'용돈', amount:200000 },
-  ],
-  event: [
-    { id: 'ev1', name:'경조사비', amount:300000 },
-  ],
-};
-
 let currentMonth = new Date().getMonth();
 let currentYear  = new Date().getFullYear();
 let modalType = '', modalPerson = '';
-let editingItem = null; // 수정 중인 항목
+let editingItem = null;
 let cache = {};
+let _defaults = null; // 스프레드시트에서 불러온 기본값
 
 function monthKey() { return `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`; }
 
-function emptyData() {
+// 스프레드시트 '기본값' 시트에서 기본값 불러오기
+async function loadDefaults() {
+  if (_defaults) return _defaults;
+  try {
+    const res = await fetch(`${API_URL}?action=getDefaults`);
+    const json = await res.json();
+    if (json.status === 'ok') {
+      _defaults = json.defaults;
+      return _defaults;
+    }
+  } catch(e) { console.error('기본값 로드 실패', e); }
+  // 불러오기 실패 시 빈 기본값
+  _defaults = { groom_fixed:[], bride_fixed:[], groom_allow:[], bride_allow:[], event:[] };
+  return _defaults;
+}
+
+function emptyData(defaults) {
   return {
-    income: [],
-    groom_fixed:  JSON.parse(JSON.stringify(DEFAULTS.groom_fixed)),
-    bride_fixed:  JSON.parse(JSON.stringify(DEFAULTS.bride_fixed)),
-    groom_allow:  JSON.parse(JSON.stringify(DEFAULTS.groom_allow)),
-    bride_allow:  JSON.parse(JSON.stringify(DEFAULTS.bride_allow)),
+    income:       [],
+    groom_fixed:  JSON.parse(JSON.stringify(defaults.groom_fixed  || [])),
+    bride_fixed:  JSON.parse(JSON.stringify(defaults.bride_fixed  || [])),
+    groom_allow:  JSON.parse(JSON.stringify(defaults.groom_allow  || [])),
+    bride_allow:  JSON.parse(JSON.stringify(defaults.bride_allow  || [])),
     living:       [],
     groom_invest: [],
     bride_invest: [],
-    event:        JSON.parse(JSON.stringify(DEFAULTS.event)),
+    event:        JSON.parse(JSON.stringify(defaults.event        || [])),
   };
 }
 
@@ -565,7 +546,7 @@ function setLoading(on) {
 // Google Sheets에서 불러오기
 async function loadData() {
   const key = `budget_${monthKey()}`;
-  if (cache[key]) return cache[key]; // 캐시 있으면 바로 반환
+  if (cache[key]) return cache[key];
   try {
     const res = await fetch(`${API_URL}?key=${key}`);
     const json = await res.json();
@@ -575,7 +556,8 @@ async function loadData() {
       return data;
     }
   } catch(e) { console.error('불러오기 실패', e); }
-  const empty = emptyData();
+  const defaults = await loadDefaults();
+  const empty = emptyData(defaults);
   cache[key] = empty;
   return empty;
 }
@@ -583,7 +565,7 @@ async function loadData() {
 // Google Sheets에 저장
 async function saveData(data) {
   const key = `budget_${monthKey()}`;
-  cache[key] = data; // 캐시 즉시 업데이트
+  cache[key] = data;
   setLoading(true);
   try {
     await fetch(API_URL, {
@@ -646,11 +628,9 @@ async function saveItem() {
   if (!data[key]) data[key] = [];
 
   if (editingItem) {
-    // 수정 모드
     const idx = data[key].findIndex(i => i.id === editingItem.id);
     if (idx !== -1) data[key][idx] = { ...data[key][idx], name, cat, amount, date };
   } else {
-    // 추가 모드
     data[key].push({ id: Date.now(), date, name, cat, amount });
   }
   closeModalDirect();
@@ -685,7 +665,6 @@ function renderTable(data, bodyId, key, type) {
     return 0;
   }
 
-  // 납부일 기준 정렬 (고정비만)
   const sorted = isFixed ? [...items].sort((a,b) => {
     const n = s => parseInt((s||'').replace(/[^0-9]/g,'')) || 99;
     return n(a.date) - n(b.date);
@@ -819,7 +798,7 @@ const now = new Date();
 document.getElementById('headerDate').textContent=`${now.getFullYear()}. ${String(now.getMonth()+1).padStart(2,'0')}. ${String(now.getDate()).padStart(2,'0')}`;
 updateMonthDisplay();
 setLoading(true);
-render().then(() => setLoading(false));
+loadDefaults().then(() => render().then(() => setLoading(false)));
 </script>
 </body>
 </html>
