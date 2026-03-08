@@ -511,16 +511,17 @@ function monthKey() { return `${currentYear}-${String(currentMonth+1).padStart(2
 // 스프레드시트 '기본값' 시트에서 기본값 불러오기
 async function loadDefaults() {
   if (_defaults) return _defaults;
+  const fallback = { groom_fixed:[], bride_fixed:[], groom_allow:[], bride_allow:[], event:[] };
   try {
     const res = await fetch(`${API_URL}?action=getDefaults`);
     const json = await res.json();
-    if (json.status === 'ok') {
+    console.log('getDefaults 응답:', JSON.stringify(json));
+    if (json && json.status === 'ok' && json.defaults) {
       _defaults = json.defaults;
       return _defaults;
     }
   } catch(e) { console.error('기본값 로드 실패', e); }
-  // 불러오기 실패 시 빈 기본값
-  _defaults = { groom_fixed:[], bride_fixed:[], groom_allow:[], bride_allow:[], event:[] };
+  _defaults = fallback;
   return _defaults;
 }
 
