@@ -254,6 +254,151 @@
   .btn-edit { background:none; border:none; color:#bbb; cursor:pointer; font-size:13px; padding:3px 5px; border-radius:5px; transition:color .2s; }
   .btn-edit:hover { color:var(--groom); }
 
+  /* Claude Update Panel */
+  .claude-panel {
+    background: linear-gradient(135deg, #f0f4ff 0%, #fff9f0 100%);
+    border: 2px solid #d0d8e8;
+    border-radius: 20px;
+    padding: 28px;
+    margin: 40px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .claude-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, rgba(124, 58, 255, 0.08) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .claude-panel-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    z-index: 1;
+  }
+  .claude-panel-description {
+    font-size: 13px;
+    color: var(--mid-gray);
+    margin-bottom: 18px;
+    position: relative;
+    z-index: 1;
+  }
+  .claude-input-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+  }
+  .claude-input-group input {
+    padding: 12px 14px;
+    border: 1.5px solid #d0d8e8;
+    border-radius: 10px;
+    font-size: 13px;
+    font-family: 'Pretendard', sans-serif;
+    background: rgba(255, 255, 255, 0.8);
+    color: var(--charcoal);
+    outline: none;
+    transition: all .2s;
+  }
+  .claude-input-group input:focus {
+    border-color: #7c3aff;
+    background: white;
+    box-shadow: 0 2px 8px rgba(124, 58, 255, 0.12);
+  }
+  .claude-input-group input::placeholder {
+    color: #aaa;
+  }
+  .claude-textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid #d0d8e8;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Pretendard', sans-serif;
+    background: rgba(255, 255, 255, 0.8);
+    color: var(--charcoal);
+    outline: none;
+    transition: all .2s;
+    resize: vertical;
+    min-height: 80px;
+    margin-bottom: 14px;
+    position: relative;
+    z-index: 1;
+  }
+  .claude-textarea:focus {
+    border-color: #7c3aff;
+    background: white;
+    box-shadow: 0 2px 8px rgba(124, 58, 255, 0.12);
+  }
+  .claude-textarea::placeholder {
+    color: #aaa;
+  }
+  .claude-buttons {
+    display: flex;
+    gap: 10px;
+    position: relative;
+    z-index: 1;
+  }
+  .claude-btn-primary {
+    flex: 1;
+    padding: 13px;
+    background: #7c3aff;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Pretendard', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .claude-btn-primary:hover {
+    background: #6b2fd6;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(124, 58, 255, 0.3);
+  }
+  .claude-btn-primary:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .claude-status {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    display: none;
+    position: relative;
+    z-index: 1;
+  }
+  .claude-status.loading {
+    background: #e8eeff;
+    color: #7c3aff;
+    display: block;
+  }
+  .claude-status.success {
+    background: #e6f4ea;
+    color: #137333;
+    display: block;
+  }
+  .claude-status.error {
+    background: #fce8e6;
+    color: #c5221f;
+    display: block;
+  }
+
   /* Modal */
   .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.48); z-index:200; align-items:center; justify-content:center; }
   .modal-overlay.active { display:flex; }
@@ -279,6 +424,7 @@
     main { padding:22px 16px 60px; }
     .summary-grid { grid-template-columns:1fr 1fr; }
     .couple-grid, .bottom-grid { grid-template-columns:1fr; }
+    .claude-input-group { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -320,6 +466,26 @@
 </header>
 
 <main>
+
+  <!-- Claude Auto Update Panel -->
+  <div class="claude-panel">
+    <div class="claude-panel-title">✨ UI 자동 수정 (Claude AI)</div>
+    <div class="claude-panel-description">요청사항을 입력하면 Claude AI가 자동으로 HTML을 수정하고 GitHub에 배포합니다.</div>
+    
+    <div class="claude-input-group">
+      <input type="password" id="claudeApiKey" placeholder="Claude API Key (sk-...)">
+      <input type="password" id="githubToken" placeholder="GitHub Token (ghp_...)">
+      <input type="text" id="githubSha" placeholder="SHA (자동 입력)">
+    </div>
+
+    <textarea id="claudeRequest" class="claude-textarea" placeholder="예시&#10;• 배경색을 밝은 파란색으로 변경해줘&#10;• 헤더 폰트를 더 크게 만들어줘&#10;• 모바일 반응형 개선해줘&#10;• 버튼 스타일을 둥글게 변경해줘"></textarea>
+
+    <div class="claude-buttons">
+      <button class="claude-btn-primary" onclick="requestClaudeUpdate()">🚀 AI 수정 요청</button>
+    </div>
+
+    <div class="claude-status" id="claudeStatus"></div>
+  </div>
 
   <div class="month-bar">
     <h2 id="monthTitle"></h2>
@@ -592,6 +758,130 @@
 // ── Google Sheets API ──
 const API_URL = 'https://script.google.com/macros/s/AKfycbwmAOEB8QFDe6EsUiC4yGV-yjmnMJxLAfQLrBRPT7fvKNUu44oZrZVGeLnHqRPk7i2r4Q/exec';
 
+// ╔════════════════════════════════════════╗
+// ║  Claude AI Auto Update Functions       ║
+// ╚════════════════════════════════════════╝
+
+async function requestClaudeUpdate() {
+  const claudeKey = document.getElementById('claudeApiKey').value.trim();
+  const githubToken = document.getElementById('githubToken').value.trim();
+  const request = document.getElementById('claudeRequest').value.trim();
+  const statusEl = document.getElementById('claudeStatus');
+
+  if (!claudeKey || !githubToken || !request) {
+    statusEl.className = 'claude-status error';
+    statusEl.textContent = '❌ Claude API Key, GitHub Token, 요청사항을 모두 입력해주세요';
+    return;
+  }
+
+  statusEl.className = 'claude-status loading';
+  statusEl.textContent = '⏳ 현재 HTML 코드를 GitHub에서 불러오는 중...';
+
+  try {
+    // 1. GitHub에서 현재 SHA 및 내용 가져오기
+    const getResponse = await fetch('https://api.github.com/repos/angdo2423-lang/yb/contents/index.html', {
+      headers: {
+        'Authorization': `token ${githubToken}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+
+    if (!getResponse.ok) {
+      throw new Error('GitHub에서 파일을 불러올 수 없습니다. Token을 확인해주세요.');
+    }
+
+    const fileData = await getResponse.json();
+    const currentHtml = atob(fileData.content);
+    const sha = fileData.sha;
+    
+    document.getElementById('githubSha').value = sha;
+
+    statusEl.textContent = '⏳ Claude가 코드를 수정 중...';
+
+    // 2. Claude API로 HTML 수정 요청
+    const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': claudeKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-1',
+        max_tokens: 8000,
+        messages: [
+          {
+            role: 'user',
+            content: `다음은 HTML 가계부 애플리케이션의 현재 코드입니다:
+
+\`\`\`html
+${currentHtml}
+\`\`\`
+
+사용자의 요청: "${request}"
+
+이 요청에 맞게 HTML/CSS를 수정해주세요. 
+주의사항:
+1. 수정된 전체 HTML 코드만 반환해주세요
+2. 설명이나 주석은 포함하지 마세요
+3. HTML 구조와 JavaScript 기능은 유지하되, CSS와 UI만 수정해주세요
+4. 반드시 \`\`\`html과 \`\`\` 사이에만 코드를 넣어주세요`
+          }
+        ]
+      })
+    });
+
+    const claudeData = await claudeResponse.json();
+
+    if (!claudeResponse.ok) {
+      throw new Error(claudeData.error?.message || 'Claude API 요청 실패');
+    }
+
+    let modifiedHtml = claudeData.content[0].text;
+
+    // HTML 코드 추출
+    const htmlMatch = modifiedHtml.match(/```html\n([\s\S]*?)\n```/) || modifiedHtml.match(/```\n([\s\S]*?)\n```/);
+    if (htmlMatch) {
+      modifiedHtml = htmlMatch[1];
+    }
+
+    statusEl.textContent = '⏳ GitHub에 배포 중...';
+
+    // 3. GitHub에 업데이트
+    const updateResponse = await fetch('https://api.github.com/repos/angdo2423-lang/yb/contents/index.html', {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${githubToken}`,
+        'Accept': 'application/vnd.github.v3+json'
+      },
+      body: JSON.stringify({
+        message: `[Claude Auto Update] ${new Date().toLocaleString('ko-KR')}`,
+        content: btoa(unescape(encodeURIComponent(modifiedHtml))),
+        sha: sha
+      })
+    });
+
+    if (!updateResponse.ok) {
+      const errorData = await updateResponse.json();
+      throw new Error(errorData.message || 'GitHub 업데이트 실패');
+    }
+
+    statusEl.className = 'claude-status success';
+    statusEl.textContent = '✅ 성공! GitHub Pages에서 자동으로 갱신됩니다. (약 1-2초 소요)';
+    
+    document.getElementById('claudeRequest').value = '';
+    
+    setTimeout(() => {
+      statusEl.className = '';
+      statusEl.textContent = '';
+    }, 5000);
+
+  } catch (error) {
+    statusEl.className = 'claude-status error';
+    statusEl.textContent = `❌ 오류: ${error.message}`;
+  }
+}
+
 // ══════════════════════════════════════
 //  인증 (로그인 / 로그아웃 / 토큰검증)
 // ══════════════════════════════════════
@@ -653,7 +943,6 @@ function showApp() {
   document.getElementById('loginSection').style.display = 'none';
   document.getElementById('appSection').style.display   = 'block';
   setLoading(true);
-  // loadDefaults + loadData 병렬 호출로 속도 개선
   const key = `budget_${monthKey()}`;
   Promise.all([
     loadDefaults(),
@@ -668,12 +957,10 @@ function showApp() {
   }).then(() => setLoading(false));
 }
 
-// 페이지 로드 시 토큰 확인 (토큰 검증과 데이터 로딩 병렬화)
 window.addEventListener('DOMContentLoaded', async () => {
   const token = sessionStorage.getItem('authToken');
   if (token) {
     setLoading(true);
-    // 토큰 검증하면서 동시에 데이터 미리 가져오기
     const key = `budget_${monthKey()}`;
     const [valid, defaultsResult, dataResult] = await Promise.all([
       verifyToken(token),
@@ -681,7 +968,6 @@ window.addEventListener('DOMContentLoaded', async () => {
       fetch(`${API_URL}?key=${key}`).then(r => r.json()).catch(() => null)
     ]);
     if (valid) {
-      // 이미 받아온 데이터 캐시에 저장
       if (dataResult && dataResult.status === 'ok' && dataResult.value) {
         cache[key] = JSON.parse(dataResult.value);
       } else if (!cache[key] && defaultsResult) {
@@ -696,7 +982,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     setLoading(false);
     sessionStorage.removeItem('authToken');
   }
-  // 토큰 없거나 만료 → 로그인 화면
   document.getElementById('loginSection').style.display = 'flex';
   setTimeout(() => document.getElementById('loginUser').focus(), 100);
 });
@@ -716,7 +1001,6 @@ function monthKey() { return `${currentYear}-${String(currentMonth+1).padStart(2
 
 async function loadDefaults() {
   if (_defaults) return _defaults;
-  // sessionStorage 캐시 확인 (새로고침해도 재호출 없음)
   const cached = sessionStorage.getItem('defaults_cache');
   if (cached) { _defaults = JSON.parse(cached); return _defaults; }
 
